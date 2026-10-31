@@ -43,6 +43,7 @@ Fecha última actualización: 2026-10-31
 - [x] M4.04 — Capas de terreno integradas en el generador y `World`: bedrock, stone, dirt, hierba y tres capas superiores de arena en playas. El barrido 3×3 comprobó todas las capas, superficie y aire sobre el terreno; encontró playa y césped; chunks generados quedan `modified=false`.
 - [x] M4.05 — Agua generada desde `h+1` hasta `SEA_LEVEL` cuando `h < SEA_LEVEL`; se encontró y verificó una columna con `h = SEA_LEVEL-3` y el bloque sobre el mar permanece en aire.
 - [x] M4.06 — Material de agua azul, semitransparente, unshaded y compartido en `WaterMesh`; pruebas PASS para 6 caras aisladas, 10 en dos bloques contiguos, 5 con piedra debajo y configuración del material.
+- [x] M4.07 — Árboles deterministas con hash entero propio por semilla/coordenadas, troncos de 4–6 bloques y copa de cuatro capas. Pruebas PASS: orden de generación, presencia de troncos y cada hoja del 3×3 a Chebyshev ≤3 de un tronco (el barrido usa una corona de chunks para verificar árboles que cruzan bordes).
 - [ ] M4.06 — Mallado del agua.
 - [ ] M4.07 — Árboles deterministas.
 - [ ] M4.08 — Cuevas.
@@ -68,7 +69,7 @@ Fecha última actualización: 2026-10-31
 - `res://scripts/world/chunk_data.gd` · array de bloques, índices, acceso, protección y relleno plano temporal · M2.04
 - `res://scripts/world/mesh_builder.gd` · clase `MeshBuilder` con geometría, UV, colores e índices para caras; buffers predefinidos para evitar arrays temporales por cara · M3.12
 - `res://scripts/world/chunk_mesher.gd` · clase `ChunkMesher` optimizada para acceso directo a bytes y caras expuestas · M3.12
-- `res://scripts/world/world_generator.gd` · `WorldGenerator(world_seed)`, mapa de alturas, capas de terreno y agua deterministas · M4.05
+- `res://scripts/world/world_generator.gd` · `WorldGenerator(world_seed)`, mapa de alturas, capas, agua y árboles deterministas · M4.07
 - `res://scripts/world/chunk.gd` · nodo `Chunk` con `SolidMesh`, `WaterMesh`, `apply_mesh`, AABB y materiales compartidos · M4.06
 - `res://scripts/world/world.gd` · gestor de datos y nodos de chunk con remallado condicionado por vecinos; usa `WorldGenerator` · M4.04
 - `res://scripts/world/voxel_raycast.gd` · clase `VoxelRaycast` · M1.02
@@ -82,7 +83,7 @@ Fecha última actualización: 2026-10-31
 - `res://scripts/ui/pause_menu.gd` · clase `PauseMenu` · M1.02
 - `res://scripts/ui/main_menu.gd` · clase `MainMenu` · M1.02
 - `res://tests/test_runner.tscn` · escena `Node` del runner · M1.02
-- `res://tests/test_runner.gd` · runner con casos de M1.06, M2.01 a M2.05, M3.02, M3.04, M3.05, M3.07 a M3.11 y M4.01 a M4.06 · M4.06
+- `res://tests/test_runner.gd` · runner con casos de M1.06, M2.01 a M2.05, M3.02, M3.04, M3.05, M3.07 a M3.11 y M4.01 a M4.07 · M4.07
 - `res://.gitignore` · exclusión de `.godot/` · proyecto base
 - `res://icon.svg` · icono del proyecto · proyecto base
 

@@ -60,6 +60,8 @@ func _ready() -> void:
 	_test_water_generation()
 	_current_milestone = "M4.06"
 	_test_water_meshing_and_material()
+	_current_milestone = "M4.07"
+	_test_deterministic_trees()
 
 func _test_world_to_chunk_and_local() -> void:
 	for test_case: Vector3i in COORD_CASES:
@@ -457,9 +459,9 @@ func _test_terrain_layers() -> void:
 						var expected_block: int = Blocks.SAND if is_beach and y >= height - 2 else Blocks.DIRT
 						if data.get_block(local_x, y, local_z) != expected_block:
 							all_columns_valid = false
-					for y: int in range(height + 1, Const.CHUNK_HEIGHT):
-						var expected_above: int = Blocks.WATER if height < Const.SEA_LEVEL and y <= Const.SEA_LEVEL else Blocks.AIR
-						if data.get_block(local_x, y, local_z) != expected_above:
+					for y: int in range(height + 1, Const.SEA_LEVEL + 1):
+						var expected_water: int = Blocks.WATER if height < Const.SEA_LEVEL else Blocks.AIR
+						if data.get_block(local_x, y, local_z) != expected_water:
 							all_columns_valid = false
 					if is_beach:
 						for y: int in range(height - 2, height):
@@ -525,9 +527,63 @@ func _test_water_meshing_and_material() -> void:
 	_check(water_mesh.material_override == water_material, "Chunk asigna el material compartido del agua")
 	chunk.free()
 
+func _test_deterministic_trees() -> void:
+	var generator: WorldGenerator = WorldGenerator.new(12345)
+	var first_00: ChunkData = generator.generate(0, 0)
+	var first_10: ChunkData = generator.generate(1, 0)
+	var reversed_10: ChunkData = generator.generate(1, 0)
+	var reversed_00: ChunkData = generator.generate(0, 0)
+	_check(first_00.blocks == reversed_00.blocks, "árboles idénticos al generar chunk 0,0 en distinto orden")
+	_check(first_10.blocks == reversed_10.blocks, "árboles idénticos al generar chunk 1,0 en distinto orden")
+
+	var chunks: Dictionary = {}
+	var log_count: int = 0
+	for cz: int in range(-2, 3):
+		for cx: int in range(-2, 3):
+			var data: ChunkData = generator.generate(cx, cz)
+			chunks[data.coord] = data
+			if cx >= -1 and cx <= 1 and cz >= -1 and cz <= 1:
+				for block_id: int in data.blocks:
+					if block_id == Blocks.LOG:
+						log_count += 1
+	_check(log_count >= 4, "3x3 chunks contienen al menos un tronco de árbol")
+
+	var every_leaf_has_nearby_trunk: bool = true
+	var central_leaf_count: int = 0
+	for cz: int in range(-1, 2):
+		for cx: int in range(-1, 2):
+			var data: ChunkData = chunks[Vector2i(cx, cz)] as ChunkData
+			for local_y: int in range(Const.CHUNK_HEIGHT):
+				for local_z: int in range(Const.CHUNK_SIZE):
+					for local_x: int in range(Const.CHUNK_SIZE):
+						if data.get_block(local_x, local_y, local_z) != Blocks.LEAVES:
+							continue
+						central_leaf_count += 1
+						var world_x: int = cx * Const.CHUNK_SIZE + local_x
+						var world_z: int = cz * Const.CHUNK_SIZE + local_z
+						var has_trunk: bool = false
+						for dy: int in range(-3, 4):
+							for dz: int in range(-3, 4):
+								for dx: int in range(-3, 4):
+									var neighbor_y: int = local_y + dy
+									if neighbor_y < 0 or neighbor_y >= Const.CHUNK_HEIGHT:
+										continue
+									var neighbor_world_x: int = world_x + dx
+									var neighbor_world_z: int = world_z + dz
+									var neighbor_coord: Vector2i = Coords.world_to_chunk(neighbor_world_x, neighbor_world_z)
+									var neighbor_data: ChunkData = chunks.get(neighbor_coord) as ChunkData
+									if neighbor_data == null:
+										continue
+									var neighbor_local: Vector2i = Coords.world_to_local(neighbor_world_x, neighbor_world_z)
+									if neighbor_data.get_block(neighbor_local.x, neighbor_y, neighbor_local.y) == Blocks.LOG:
+										has_trunk = true
+						if not has_trunk:
+							every_leaf_has_nearby_trunk = false
+	_check(central_leaf_count > 0 and every_leaf_has_nearby_trunk, "cada hoja del 3x3 tiene un tronco a Chebyshev <=3")
+
 @warning_ignore("shadowed_variable_base_class")
 func _check(cond: bool, name: String) -> void:
 	if cond:
-		print("PASS ", _current_milestone, " ", name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11 # DEBUG-M4.01 # DEBUG-M4.02 # DEBUG-M4.03 # DEBUG-M4.04 # DEBUG-M4.05 # DEBUG-M4.06
+		print("PASS ", _current_milestone, " ", name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11 # DEBUG-M4.01 # DEBUG-M4.02 # DEBUG-M4.03 # DEBUG-M4.04 # DEBUG-M4.05 # DEBUG-M4.06 # DEBUG-M4.07
 	else:
-		push_error("FAIL " + _current_milestone + " " + name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11 # DEBUG-M4.01 # DEBUG-M4.02 # DEBUG-M4.03 # DEBUG-M4.04 # DEBUG-M4.05 # DEBUG-M4.06
+		push_error("FAIL " + _current_milestone + " " + name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11 # DEBUG-M4.01 # DEBUG-M4.02 # DEBUG-M4.03 # DEBUG-M4.04 # DEBUG-M4.05 # DEBUG-M4.06 # DEBUG-M4.07
