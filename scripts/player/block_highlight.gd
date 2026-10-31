@@ -1,0 +1,2 @@
+class_name BlockHighlight
+extends MeshInstance3D
