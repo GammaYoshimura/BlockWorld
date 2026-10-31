@@ -52,6 +52,9 @@ func set_collision_enabled(enabled: bool) -> void:
 func has_collision() -> bool:
 	return _collision_enabled and _collision_shape.shape != null
 
+func is_collision_enabled() -> bool:
+	return _collision_enabled
+
 func _refresh_collision_shape() -> void:
 	if not _collision_enabled or _solid_mesh.mesh == null:
 		_collision_shape.shape = null

@@ -141,10 +141,15 @@ func are_collisions_ready(center_chunk: Vector2i, radius: int) -> bool:
 
 func _update_collision_range(center_chunk: Vector2i) -> void:
 	var radius_squared: int = Const.COLLISION_RADIUS * Const.COLLISION_RADIUS
+	var disable_radius: int = Const.COLLISION_RADIUS + 1
+	var disable_radius_squared: int = disable_radius * disable_radius
 	for coord_variant: Variant in chunk_nodes.keys():
 		var coord: Vector2i = coord_variant as Vector2i
 		var chunk_node: Chunk = chunk_nodes[coord] as Chunk
-		var enable_collision: bool = (coord - center_chunk).length_squared() <= radius_squared
+		var distance_squared: int = (coord - center_chunk).length_squared()
+		var enable_collision: bool = distance_squared <= radius_squared
+		if chunk_node.is_collision_enabled() and distance_squared <= disable_radius_squared:
+			enable_collision = true
 		chunk_node.set_collision_enabled(enable_collision)
 
 func _refresh_streaming_queues(center_chunk: Vector2i) -> void:
