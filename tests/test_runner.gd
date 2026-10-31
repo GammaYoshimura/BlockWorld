@@ -52,6 +52,8 @@ func _ready() -> void:
 	_test_world_chunk_manager()
 	_current_milestone = "M4.02"
 	_test_world_generator_deterministic()
+	_current_milestone = "M4.03"
+	_test_height_map()
 
 func _test_world_to_chunk_and_local() -> void:
 	for test_case: Vector3i in COORD_CASES:
@@ -407,9 +409,24 @@ func _test_world_generator_deterministic() -> void:
 	_check(first.blocks == second.blocks, "generate devuelve bloques idénticos para misma semilla y coordenada")
 	_check(first.blocks.size() == Const.CHUNK_SIZE * Const.CHUNK_HEIGHT * Const.CHUNK_SIZE, "generate conserva el tamaño del chunk")
 
+func _test_height_map() -> void:
+	var generator: WorldGenerator = WorldGenerator.new(12345)
+	var minimum_height: int = Const.CHUNK_HEIGHT
+	var maximum_height: int = 0
+	for wz: int in range(256):
+		for wx: int in range(256):
+			var height: int = generator.height_at(wx, wz)
+			minimum_height = mini(minimum_height, height)
+			maximum_height = maxi(maximum_height, height)
+	_check(minimum_height >= 14 and maximum_height <= 42, "height_at queda entre 14 y 42 en 256x256")
+	_check(absi(generator.height_at(15, 0) - generator.height_at(16, 0)) <= 3, "height_at es continuo al cruzar x=15/16")
+	_check(absi(generator.height_at(-1, 0) - generator.height_at(0, 0)) <= 3, "height_at es continuo al cruzar x=-1/0")
+	var sampled_height: int = generator.height_at(7, 9)
+	_check(sampled_height == generator.height_at(7, 9), "height_at es determinista para la misma coordenada")
+
 @warning_ignore("shadowed_variable_base_class")
 func _check(cond: bool, name: String) -> void:
 	if cond:
-		print("PASS ", _current_milestone, " ", name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11 # DEBUG-M4.01 # DEBUG-M4.02
+		print("PASS ", _current_milestone, " ", name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11 # DEBUG-M4.01 # DEBUG-M4.02 # DEBUG-M4.03
 	else:
-		push_error("FAIL " + _current_milestone + " " + name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11 # DEBUG-M4.01 # DEBUG-M4.02
+		push_error("FAIL " + _current_milestone + " " + name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11 # DEBUG-M4.01 # DEBUG-M4.02 # DEBUG-M4.03
