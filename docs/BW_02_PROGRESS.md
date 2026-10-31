@@ -58,9 +58,20 @@ Fecha última actualización: 2026-10-31
 - [x] M5.06 — Salto de 1.27 bloques y auto-salto hacia delante hasta un bloque; usuario confirmó que funciona con trayectoria fluida.
 - [x] M5.07 — Ctrl + avanzar acelera a 5.6; Shift reduce a 1.3; caminar mantiene 4.3. Usuario confirmó ambas velocidades.
 - [x] M5.08 — Aparece sobre `height_at(0,0)` y mantiene la física desactivada hasta tener colisiones en radio 2; muestra «Generando mundo…» durante la carga. Implementado junto con M5.05 para evitar caídas durante el inicio.
-- [ ] M5.09 — Vuelo con F: sin gravedad, velocidad `FLY_SPEED`, Espacio sube y Shift baja; conserva `move_and_slide()` y colisión. Pendiente confirmación en juego.
+- [x] M5.09 — Vuelo con F: sin gravedad, velocidad `FLY_SPEED`, Espacio sube y Shift baja; conserva `move_and_slide()` y colisión. Usuario confirmó que funciona. Restricción a modo creativo/objetos especiales queda como decisión futura.
 - [ ] M5.10 — Al caer bajo Y=-20 reaparece en el spawn y se anula la velocidad; implementación lista, falta comprobar recuperación.
 - [x] M5.11 — Cámara con `fov=70`, `near=0.05` y `far=(render_distance+2)*CHUNK_SIZE`.
+
+## Fase 6 — Interacción con bloques
+- [ ] M6.01 — Implementado `VoxelRaycast.cast` con DDA (Amanatides & Woo), coordenadas negativas y omisión de AIR/WATER; requiere validación de los 7 casos del contrato.
+- [ ] M6.02 — Resaltado de bloque apuntado con cubo de aristas ±0.002 y alcance `PLAYER_REACH`; implementado en escena, pendiente comprobar visualmente que sigue la mira y no produce z-fighting.
+- [ ] M6.03 — Romper bloque.
+- [ ] M6.04 — Remallado del chunk y vecinos tras edición.
+- [ ] M6.05 — Colocar bloque.
+- [ ] M6.06 — Lógica de hotbar.
+- [ ] M6.07 — Pick block.
+- [ ] M6.08 — Repetición al mantener.
+- [ ] M6.09 — Ediciones sobreviven a descarga.
 
 ## Desviaciones del contrato (si las hay, aprobadas por el humano)
 - M1.04: el criterio menciona 25 acciones, pero la lista de la sección 3.7 enumera 24; se implementaron las 24 enumeradas, sin inventar una acción.
@@ -86,6 +97,8 @@ Fecha última actualización: 2026-10-31
 - `res://scripts/world/voxel_raycast.gd` · clase `VoxelRaycast` · M1.02
 - `res://scripts/world/save_manager.gd` · clase `SaveManager` · M1.02
 - `res://scripts/player/player.gd` · jugador con movimiento, salto, vuelo, respawn y cámara · M5.10
+- `res://scripts/player/block_highlight.gd` · malla de contorno y raycast de selección · M6.02
+- `res://scripts/world/voxel_raycast.gd` · raycast voxel DDA · M6.01
 - `res://scripts/player/block_interaction.gd` · clase `BlockInteraction` · M1.02
 - `res://scripts/player/block_highlight.gd` · clase `BlockHighlight` · M1.02
 - `res://scripts/ui/hud.gd` · clase `Hud` · M1.02
