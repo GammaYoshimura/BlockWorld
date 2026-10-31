@@ -4,6 +4,7 @@ extends CharacterBody3D
 var head: Node3D
 var camera: Camera3D
 var _body_collision: CollisionShape3D
+var auto_step_status: String = "esperando pared"
 
 func _physics_process(delta: float) -> void:
 	var input_direction: Vector2 = Input.get_vector(
@@ -16,16 +17,12 @@ func _physics_process(delta: float) -> void:
 	var wish_direction: Vector3 = (transform.basis * local_direction).normalized()
 	var target_velocity: Vector3 = wish_direction * Const.WALK_SPEED
 	var acceleration: float = 60.0 if is_on_floor() else 20.0
+	var was_on_floor: bool = is_on_floor()
 	velocity.x = move_toward(velocity.x, target_velocity.x, acceleration * delta)
 	velocity.z = move_toward(velocity.z, target_velocity.z, acceleration * delta)
 	var jump_requested: bool = Input.is_action_just_pressed(&"jump") and is_on_floor()
 	if jump_requested:
 		velocity.y = Const.JUMP_VELOCITY
-	if not jump_requested and is_on_floor() and wish_direction != Vector3.ZERO:
-		var horizontal_motion: Vector3 = Vector3(velocity.x, 0.0, velocity.z) * delta
-		if _try_auto_step(horizontal_motion):
-			velocity.y = 0.0
-			return
 	if is_on_floor():
 		if velocity.y < 0.0:
 			velocity.y = 0.0
@@ -35,52 +32,60 @@ func _physics_process(delta: float) -> void:
 			-Const.TERMINAL_VELOCITY
 		)
 	move_and_slide()
+	if was_on_floor and not jump_requested and wish_direction != Vector3.ZERO:
+		if is_on_wall():
+			if _can_auto_jump_over_step(wish_direction):
+				velocity.y = Const.JUMP_VELOCITY
+				auto_step_status = "auto-salto %.2f" % Const.AUTO_STEP_HEIGHT
+		else:
+			auto_step_status = "sin pared detectada"
 
-func _try_auto_step(horizontal_motion: Vector3) -> bool:
-	if horizontal_motion.is_zero_approx():
+func _can_auto_jump_over_step(direction: Vector3) -> bool:
+	if direction.is_zero_approx():
+		auto_step_status = "sin dirección"
 		return false
-	var original_transform: Transform3D = global_transform
-	var wall_collision: KinematicCollision3D = KinematicCollision3D.new()
-	if not test_move(global_transform, horizontal_motion, wall_collision):
+	auto_step_status = "comprobando superficie"
+	var horizontal_direction: Vector3 = Vector3(direction.x, 0.0, direction.z).normalized()
+	var probe_distance: float = Const.PLAYER_WIDTH * 0.5 + safe_margin + 0.1
+	var probe_target: Vector3 = global_position + horizontal_direction * probe_distance
+	var ray_query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(
+		probe_target + Vector3.UP * (Const.AUTO_STEP_HEIGHT + 0.1),
+		probe_target + Vector3.DOWN * 0.1
+	)
+	ray_query.collision_mask = collision_mask
+	ray_query.exclude = [get_rid()]
+	ray_query.collide_with_areas = false
+	var floor_hit: Dictionary = get_world_3d().direct_space_state.intersect_ray(ray_query)
+	if floor_hit.is_empty():
+		auto_step_status = "sin suelo delante"
 		return false
-	if wall_collision.get_normal().dot(Vector3.UP) >= cos(floor_max_angle):
+	var floor_normal: Vector3 = floor_hit["normal"]
+	if floor_normal.dot(Vector3.UP) < cos(floor_max_angle):
+		return false
+	var floor_position: Vector3 = floor_hit["position"]
+	var step_rise: float = floor_position.y - global_position.y
+	if step_rise <= 0.05 or step_rise > Const.AUTO_STEP_HEIGHT + 0.01:
+		auto_step_status = "altura %.2f" % step_rise
 		return false
 
-	var step_transform: Transform3D = global_transform
-	step_transform.origin += Vector3.UP * Const.AUTO_STEP_HEIGHT
-	if not _step_position_is_clear(step_transform):
+	var target_transform: Transform3D = global_transform
+	target_transform.origin = probe_target
+	target_transform.origin.y = floor_position.y
+	var shape_query: PhysicsShapeQueryParameters3D = PhysicsShapeQueryParameters3D.new()
+	shape_query.shape = _body_collision.shape
+	var clearance_transform: Transform3D = target_transform
+	clearance_transform.origin.y += 0.02
+	shape_query.transform = clearance_transform * _body_collision.transform
+	shape_query.collision_mask = collision_mask
+	shape_query.exclude = [get_rid()]
+	shape_query.collide_with_areas = false
+	shape_query.collide_with_bodies = true
+	shape_query.margin = 0.0
+	if not get_world_3d().direct_space_state.intersect_shape(shape_query, 1).is_empty():
+		auto_step_status = "cápsula bloqueada (%.2f)" % step_rise
 		return false
-	var forward_collision: KinematicCollision3D = KinematicCollision3D.new()
-	if test_move(step_transform, horizontal_motion, forward_collision):
-		return false
-
-	var target_transform: Transform3D = step_transform
-	target_transform.origin += horizontal_motion
-	if not _step_position_is_clear(target_transform):
-		return false
-	var landing_collision: KinematicCollision3D = KinematicCollision3D.new()
-	var down_motion: Vector3 = Vector3.DOWN * (Const.AUTO_STEP_HEIGHT + 0.1)
-	if not test_move(target_transform, down_motion, landing_collision):
-		return false
-	if landing_collision.get_normal().dot(Vector3.UP) < cos(floor_max_angle):
-		return false
-
-	global_transform = target_transform
-	if move_and_collide(down_motion) == null:
-		global_transform = original_transform
-		return false
+	auto_step_status = "obstáculo %.2f" % step_rise
 	return true
-
-func _step_position_is_clear(body_transform: Transform3D) -> bool:
-	var query: PhysicsShapeQueryParameters3D = PhysicsShapeQueryParameters3D.new()
-	query.shape = _body_collision.shape
-	query.transform = body_transform * _body_collision.transform
-	query.collision_mask = collision_mask
-	query.exclude = [get_rid()]
-	query.collide_with_areas = false
-	query.collide_with_bodies = true
-	query.margin = 0.0
-	return get_world_3d().direct_space_state.intersect_shape(query, 1).is_empty()
 
 func _ready() -> void:
 	collision_layer = 2
