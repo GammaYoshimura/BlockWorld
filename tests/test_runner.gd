@@ -48,6 +48,8 @@ func _ready() -> void:
 	_test_face_brightness()
 	_current_milestone = "M3.11"
 	_test_face_visibility()
+	_current_milestone = "M4.01"
+	_test_world_chunk_manager()
 
 func _test_world_to_chunk_and_local() -> void:
 	for test_case: Vector3i in COORD_CASES:
@@ -363,9 +365,40 @@ func _test_face_visibility() -> void:
 	_check(ChunkMesher._face_visible(Blocks.STONE, Blocks.WATER), "STONE frente a WATER")
 	_check(ChunkMesher._face_visible(Blocks.WATER, Blocks.GLASS), "WATER frente a GLASS")
 
+func _test_world_chunk_manager() -> void:
+	var world: World = World.new()
+	add_child(world)
+	var first_data: ChunkData = world.ensure_chunk(-2, 2)
+	_check(first_data.coord == Vector2i(-2, 2), "ensure_chunk conserva coordenadas negativas")
+	_check(first_data.get_block(0, 20, 0) == Blocks.GRASS, "ensure_chunk crea datos planos")
+	_check(world.ensure_chunk(-2, 2) == first_data, "ensure_chunk reutiliza los datos existentes")
+	_check(world.chunks.size() == 1 and world.chunk_nodes.size() == 1, "ensure_chunk no duplica chunks")
+	_check(not world.remesh(Vector2i(-2, 2)), "remesh espera a los cuatro vecinos")
+	for cz: int in range(-2, 3):
+		for cx: int in range(-2, 3):
+			world.ensure_chunk(cx, cz)
+
+	var meshed_count: int = 0
+	var unmeshed_border_count: int = 0
+	for cz: int in range(-2, 3):
+		for cx: int in range(-2, 3):
+			var coord: Vector2i = Vector2i(cx, cz)
+			var remeshed: bool = world.remesh(coord)
+			var is_interior: bool = cx >= -1 and cx <= 1 and cz >= -1 and cz <= 1
+			var chunk_node: Chunk = world.chunk_nodes[coord] as Chunk
+			var solid_mesh: MeshInstance3D = chunk_node.get_node("SolidMesh") as MeshInstance3D
+			if is_interior and remeshed and solid_mesh.mesh != null:
+				meshed_count += 1
+			elif not is_interior and not remeshed and solid_mesh.mesh == null:
+				unmeshed_border_count += 1
+	_check(meshed_count == 9, "5x5 malla los 9 chunks interiores")
+	_check(unmeshed_border_count == 16, "5x5 deja los 16 chunks del borde sin mesh")
+	_check(world.get_child_count() == 25, "5x5 crea exactamente 25 nodos Chunk")
+	world.free()
+
 @warning_ignore("shadowed_variable_base_class")
 func _check(cond: bool, name: String) -> void:
 	if cond:
-		print("PASS ", _current_milestone, " ", name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11
+		print("PASS ", _current_milestone, " ", name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11 # DEBUG-M4.01
 	else:
-		push_error("FAIL " + _current_milestone + " " + name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11
+		push_error("FAIL " + _current_milestone + " " + name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11 # DEBUG-M4.01

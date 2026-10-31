@@ -36,13 +36,26 @@ Fecha última actualización: 2026-10-31
 - [x] M3.11 — Regla de cara visible con transparentes (la tabla completa de visibilidad pasó los 13 casos del contrato).
 - [x] M3.12 — Medir el mallado (tiempo promedio de construcción calculado sobre los 9 chunks y expuesto en el overlay debug; medición optimizada estable: 33.7–34.3 ms/chunk, frente a 324.13 ms iniciales).
 
+## Fase 4 — Mundo y terreno
+- [x] M4.01 — Gestor de chunks estático (`World.ensure_chunk` crea/reutiliza datos y nodo; `World.remesh` espera los cuatro vecinos; el caso 5×5 malló solo los 9 chunks interiores y dejó el borde sin malla).
+- [ ] M4.02 — `WorldGenerator` determinista.
+- [ ] M4.03 — Mapa de alturas con ruido.
+- [ ] M4.04 — Capas del terreno.
+- [ ] M4.05 — Agua.
+- [ ] M4.06 — Mallado del agua.
+- [ ] M4.07 — Árboles deterministas.
+- [ ] M4.08 — Cuevas.
+- [ ] M4.09 — Carga dinámica alrededor del jugador.
+- [ ] M4.10 — Descarga con histéresis.
+- [ ] M4.11 — Semilla.
+
 ## Desviaciones del contrato (si las hay, aprobadas por el humano)
 - M1.04: el criterio menciona 25 acciones, pero la lista de la sección 3.7 enumera 24; se implementaron las 24 enumeradas, sin inventar una acción.
 
 ## Archivos existentes (ruta · propósito · último milestone que lo tocó)
 - `res://project.godot` · configuración, escena principal y autoload `InputSetup` · M1.04
 - `res://scenes/main.tscn` · escena raíz `Main` (Node3D) con script `main.gd` · M1.02
-- `res://scripts/main.gd` · crea luz direccional, entorno, cámara, cuadrícula 3×3 de chunks planos y etiqueta de depuración con tiempo medio de mallado · M3.12
+- `res://scripts/main.gd` · crea luz direccional, entorno, cámara, mundo 5×5 con malla en los 9 chunks interiores y etiqueta de depuración · M4.01
 - `res://scripts/util/fly_camera.gd` · cámara libre temporal sobre `Camera3D` · M1.08
 - `res://scripts/autoload/game_settings.gd` · base de autoload (`extends Node`) · M1.02
 - `res://scripts/autoload/input_setup.gd` · registro de acciones de entrada y comprobación temporal · M1.04
@@ -56,7 +69,7 @@ Fecha última actualización: 2026-10-31
 - `res://scripts/world/chunk_mesher.gd` · clase `ChunkMesher` optimizada para acceso directo a bytes y caras expuestas · M3.12
 - `res://scripts/world/world_generator.gd` · clase `WorldGenerator` · M1.02
 - `res://scripts/world/chunk.gd` · nodo `Chunk` con `SolidMesh`, `WaterMesh`, `apply_mesh`, AABB y material sólido compartido · M3.07
-- `res://scripts/world/world.gd` · diccionario de chunks y acceso a bloques del mundo · M2.05
+- `res://scripts/world/world.gd` · gestor de datos y nodos de chunk con remallado condicionado por vecinos · M4.01
 - `res://scripts/world/voxel_raycast.gd` · clase `VoxelRaycast` · M1.02
 - `res://scripts/world/save_manager.gd` · clase `SaveManager` · M1.02
 - `res://scripts/player/player.gd` · clase `Player` · M1.02
@@ -68,7 +81,7 @@ Fecha última actualización: 2026-10-31
 - `res://scripts/ui/pause_menu.gd` · clase `PauseMenu` · M1.02
 - `res://scripts/ui/main_menu.gd` · clase `MainMenu` · M1.02
 - `res://tests/test_runner.tscn` · escena `Node` del runner · M1.02
-- `res://tests/test_runner.gd` · runner con casos de M1.06, M2.01 a M2.05 y M3.02, M3.04, M3.05, M3.07 y M3.08 · M3.08
+- `res://tests/test_runner.gd` · runner con casos de M1.06, M2.01 a M2.05, M3.02, M3.04, M3.05, M3.07 a M3.11 y M4.01 · M4.01
 - `res://.gitignore` · exclusión de `.godot/` · proyecto base
 - `res://icon.svg` · icono del proyecto · proyecto base
 
@@ -81,4 +94,4 @@ Fecha última actualización: 2026-10-31
 - La visibilidad de las seis caras se evalúa inline en el bucle caliente. Dos ejecuciones midieron 33.722 y 34.276 ms por chunk para la misma escena de nueve chunks planos.
 
 ## Problemas abiertos
-- La escena principal todavía se ve gris para el usuario, aunque atlas, UV y materiales están asignados y sus pruebas pasan; falta identificar por qué el render en su pantalla no muestra las texturas.\n
+- La escena principal todavía se ve gris para el usuario, aunque atlas, UV y materiales están asignados y sus pruebas pasan; falta identificar por qué el render en su pantalla no muestra las texturas.

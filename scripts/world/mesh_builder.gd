@@ -93,4 +93,4 @@ func to_arrays() -> Array:
 	arrays[Mesh.ARRAY_TEX_UV] = uvs
 	arrays[Mesh.ARRAY_COLOR] = colors
 	arrays[Mesh.ARRAY_INDEX] = indices
-	return arrays\n
+	return arrays

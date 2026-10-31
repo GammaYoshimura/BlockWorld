@@ -1,13 +1,7 @@
 extends Node3D
 
-const TEST_CHUNK_MIN_COORD: int = -1
-const TEST_CHUNK_MAX_COORD: int = 1
-const CHUNK_NEIGHBOR_OFFSETS: Array[Vector2i] = [
-	Vector2i(-1, 0),
-	Vector2i(1, 0),
-	Vector2i(0, -1),
-	Vector2i(0, 1)
-]
+const TEST_CHUNK_MIN_COORD: int = -2
+const TEST_CHUNK_MAX_COORD: int = 2
 
 var _camera: Camera3D
 var _debug_label: Label
@@ -46,33 +40,21 @@ func _ready() -> void:
 	_update_debug_label()
 
 func _build_test_world() -> void:
-	var chunk_data_by_coord: Dictionary = {}
+	var world: World = World.new()
+	world.name = "World"
+	add_child(world)
 	var total_mesh_time_usec: int = 0
 	var mesh_build_count: int = 0
 	for chunk_z: int in range(TEST_CHUNK_MIN_COORD, TEST_CHUNK_MAX_COORD + 1):
 		for chunk_x: int in range(TEST_CHUNK_MIN_COORD, TEST_CHUNK_MAX_COORD + 1):
-			var coord: Vector2i = Vector2i(chunk_x, chunk_z)
-			var data: ChunkData = ChunkData.new(coord)
-			data.fill_flat()
-			chunk_data_by_coord[coord] = data
+			world.ensure_chunk(chunk_x, chunk_z)
 
 	for chunk_z: int in range(TEST_CHUNK_MIN_COORD, TEST_CHUNK_MAX_COORD + 1):
 		for chunk_x: int in range(TEST_CHUNK_MIN_COORD, TEST_CHUNK_MAX_COORD + 1):
 			var coord: Vector2i = Vector2i(chunk_x, chunk_z)
-			var data: ChunkData = chunk_data_by_coord[coord] as ChunkData
-			var neighbors: Dictionary = {}
-			for offset: Vector2i in CHUNK_NEIGHBOR_OFFSETS:
-				var neighbor_coord: Vector2i = coord + offset
-				if chunk_data_by_coord.has(neighbor_coord):
-					neighbors[offset] = chunk_data_by_coord[neighbor_coord]
-
-			var chunk: Chunk = Chunk.new(coord)
-			add_child(chunk)
-			var build_start_usec: int = Time.get_ticks_usec()
-			var mesh_result: Dictionary = ChunkMesher.build(data, neighbors)
-			total_mesh_time_usec += Time.get_ticks_usec() - build_start_usec
-			mesh_build_count += 1
-			chunk.apply_mesh(mesh_result)
+			if world.remesh(coord):
+				total_mesh_time_usec += world.last_mesh_build_usec
+				mesh_build_count += 1
 
 	if mesh_build_count > 0:
 		_mesh_build_ms = float(total_mesh_time_usec) / float(mesh_build_count) / 1000.0
@@ -91,4 +73,4 @@ func _update_debug_label() -> void:
 		String.num(camera_position.x, 2),
 		String.num(camera_position.y, 2),
 		String.num(camera_position.z, 2)
-	]\n
+	]
