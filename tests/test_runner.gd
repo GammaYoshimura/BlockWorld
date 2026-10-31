@@ -62,6 +62,8 @@ func _ready() -> void:
 	_test_water_meshing_and_material()
 	_current_milestone = "M4.07"
 	_test_deterministic_trees()
+	_current_milestone = "M4.08"
+	_test_caves()
 
 func _test_world_to_chunk_and_local() -> void:
 	for test_case: Vector3i in COORD_CASES:
@@ -453,7 +455,8 @@ func _test_terrain_layers() -> void:
 					if data.get_block(local_x, height, local_z) != (Blocks.SAND if is_beach else Blocks.GRASS):
 						all_columns_valid = false
 					for y: int in range(1, height - 3):
-						if data.get_block(local_x, y, local_z) != Blocks.STONE:
+						var expected_stone: int = Blocks.AIR if generator._is_cave_at(world_x, y, world_z, height) else Blocks.STONE
+						if data.get_block(local_x, y, local_z) != expected_stone:
 							all_columns_valid = false
 					for y: int in range(height - 3, height):
 						var expected_block: int = Blocks.SAND if is_beach and y >= height - 2 else Blocks.DIRT
@@ -581,9 +584,33 @@ func _test_deterministic_trees() -> void:
 							every_leaf_has_nearby_trunk = false
 	_check(central_leaf_count > 0 and every_leaf_has_nearby_trunk, "cada hoja del 3x3 tiene un tronco a Chebyshev <=3")
 
+func _test_caves() -> void:
+	var generator: WorldGenerator = WorldGenerator.new(12345)
+	var caves_are_below_surface_and_above_bedrock: bool = true
+	var cave_voxel_count: int = 0
+	for cz: int in range(-1, 2):
+		for cx: int in range(-1, 2):
+			var data: ChunkData = generator.generate(cx, cz)
+			for local_z: int in range(Const.CHUNK_SIZE):
+				for local_x: int in range(Const.CHUNK_SIZE):
+					var wx: int = cx * Const.CHUNK_SIZE + local_x
+					var wz: int = cz * Const.CHUNK_SIZE + local_z
+					var height: int = generator.height_at(wx, wz)
+					if data.get_block(local_x, 0, local_z) != Blocks.BEDROCK:
+						caves_are_below_surface_and_above_bedrock = false
+					if data.get_block(local_x, height, local_z) != (Blocks.SAND if height <= Const.SEA_LEVEL + 2 else Blocks.GRASS):
+						caves_are_below_surface_and_above_bedrock = false
+					for y: int in range(5, height - 4):
+						if generator._is_cave_at(wx, y, wz, height):
+							cave_voxel_count += 1
+							if data.get_block(local_x, y, local_z) != Blocks.AIR:
+								caves_are_below_surface_and_above_bedrock = false
+	_check(cave_voxel_count > 0, "ruido 3D talla cuevas en el barrido 3x3")
+	_check(caves_are_below_surface_and_above_bedrock, "cuevas dejan bedrock y superficie intactos")
+
 @warning_ignore("shadowed_variable_base_class")
 func _check(cond: bool, name: String) -> void:
 	if cond:
-		print("PASS ", _current_milestone, " ", name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11 # DEBUG-M4.01 # DEBUG-M4.02 # DEBUG-M4.03 # DEBUG-M4.04 # DEBUG-M4.05 # DEBUG-M4.06 # DEBUG-M4.07
+		print("PASS ", _current_milestone, " ", name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11 # DEBUG-M4.01 # DEBUG-M4.02 # DEBUG-M4.03 # DEBUG-M4.04 # DEBUG-M4.05 # DEBUG-M4.06 # DEBUG-M4.07 # DEBUG-M4.08
 	else:
-		push_error("FAIL " + _current_milestone + " " + name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11 # DEBUG-M4.01 # DEBUG-M4.02 # DEBUG-M4.03 # DEBUG-M4.04 # DEBUG-M4.05 # DEBUG-M4.06 # DEBUG-M4.07
+		push_error("FAIL " + _current_milestone + " " + name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11 # DEBUG-M4.01 # DEBUG-M4.02 # DEBUG-M4.03 # DEBUG-M4.04 # DEBUG-M4.05 # DEBUG-M4.06 # DEBUG-M4.07 # DEBUG-M4.08

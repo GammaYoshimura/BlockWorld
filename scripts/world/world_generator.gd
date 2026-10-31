@@ -3,6 +3,7 @@ extends RefCounted
 
 var world_seed: int = 0
 var _height_noise: FastNoiseLite
+var _cave_noise: FastNoiseLite
 
 func _init(seed_value: int = 0) -> void:
 	world_seed = seed_value
@@ -12,6 +13,9 @@ func _init(seed_value: int = 0) -> void:
 	_height_noise.fractal_type = FastNoiseLite.FRACTAL_FBM
 	_height_noise.fractal_octaves = 4
 	_height_noise.seed = world_seed
+	_cave_noise = FastNoiseLite.new()
+	_cave_noise.frequency = 0.05
+	_cave_noise.seed = world_seed + 1
 
 func height_at(wx: int, wz: int) -> int:
 	var noise_value: float = _height_noise.get_noise_2d(float(wx), float(wz))
@@ -27,7 +31,8 @@ func generate(cx: int, cz: int) -> ChunkData:
 			var height: int = height_at(world_x, world_z)
 			data.set_block(local_x, 0, local_z, Blocks.BEDROCK)
 			for y: int in range(1, height - 3):
-				data.set_block(local_x, y, local_z, Blocks.STONE)
+				var block_id: int = Blocks.AIR if _is_cave_at(world_x, y, world_z, height) else Blocks.STONE
+				data.set_block(local_x, y, local_z, block_id)
 			for y: int in range(height - 3, height):
 				data.set_block(local_x, y, local_z, Blocks.DIRT)
 			var is_beach: bool = height <= Const.SEA_LEVEL + 2
@@ -100,3 +105,8 @@ static func _hash_combo(seed_value: int, wx: int, wz: int) -> int:
 	value = (value * 1540483477) & UINT_MASK
 	value = (value ^ (value >> 15)) & UINT_MASK
 	return value & 0x7FFFFFFF
+
+func _is_cave_at(wx: int, y: int, wz: int, surface_height: int) -> bool:
+	if y < 5 or y >= surface_height - 4:
+		return false
+	return _cave_noise.get_noise_3d(float(wx), float(y), float(wz)) > 0.55
