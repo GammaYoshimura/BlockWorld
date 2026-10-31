@@ -91,6 +91,9 @@ Fecha última actualización: 2026-10-31
 - [ ] M8.07 — `_exit_tree` espera las tareas activas de generación y mallado antes de liberar el mundo; falta confirmar cierre sin errores.
 - [ ] M8.08 — Objetivo en R=8 pendiente de medir en el PC del usuario: 60 FPS estables y picos bajo 25 ms. F3 muestra frame actual/pico, tiempo de mallado worker y aplicación de malla.
 
+## Fase 9 — Guardado
+- [ ] M9.01 — Al salir, `SaveManager` escribe `user://saves/<nombre>/world.json` con versión, nombre, semilla, tiempo, posición/yaw/pitch/vuelo y hotbar/selección. Falta comprobar archivo y valores tras cerrar.
+
 ## Desviaciones del contrato (si las hay, aprobadas por el humano)
 - M1.04: el criterio menciona 25 acciones, pero la lista de la sección 3.7 enumera 24; se implementaron las 24 enumeradas, sin inventar una acción.
 
@@ -98,9 +101,9 @@ Fecha última actualización: 2026-10-31
 - `res://project.godot` · configuración, escena principal y autoloads `GameSettings`/`InputSetup` · M4.11
 - `res://scenes/main.tscn` · escena raíz `Main` (Node3D) con script `main.gd` · M1.02
 - `res://scenes/main_menu.tscn` · menú inicial con semilla y acceso al mundo · M7.05
-- `res://scripts/main.gd` · crea entorno, jugador con spawn gating y overlay F3 completo · M7.03
+- `res://scripts/main.gd` · crea entorno, jugador con spawn gating, overlay F3 y guardado de metadatos al salir · M9.01
 - `res://scripts/util/fly_camera.gd` · cámara libre temporal sobre `Camera3D` · M1.08
-- `res://scripts/autoload/game_settings.gd` · semilla y distancia de renderizado persistentes durante la sesión · M7.06
+- `res://scripts/autoload/game_settings.gd` · semilla, nombre y distancia de renderizado persistentes durante la sesión · M9.01
 - `res://scripts/autoload/input_setup.gd` · registro de acciones de entrada y comprobación temporal · M1.04
 - `res://scripts/util/const.gd` · constantes del contrato · M1.03
 - `res://scripts/util/thread_result_queue.gd` · cola segura de resultados para tareas worker · M8.01
@@ -117,7 +120,7 @@ Fecha última actualización: 2026-10-31
 - `res://scripts/world/chunk.gd` · nodo `Chunk` con mallas y colisión trimesh opcional e histéresis de activación · M8.05
 - `res://scripts/world/world.gd` · streaming, generación/mallado en hilos, presupuesto de aplicación, descarte fuera de rango, cierre de tareas, colisiones y spawn · M8.07
 - `res://scripts/world/voxel_raycast.gd` · clase `VoxelRaycast` · M1.02
-- `res://scripts/world/save_manager.gd` · clase `SaveManager` · M1.02
+- `res://scripts/world/save_manager.gd` · escritura segura del archivo de metadatos del mundo · M9.01
 - `res://scripts/player/player.gd` · jugador con movimiento, salto, vuelo, respawn y cámara · M5.10
 - `res://scripts/player/block_highlight.gd` · malla de contorno y raycast de selección · M6.02
 - `res://scripts/player/block_interaction.gd` · rompe bloque apuntado con clic izquierdo · M6.03

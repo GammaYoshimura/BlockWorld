@@ -52,6 +52,7 @@ func _start_world() -> void:
 		_seed_input.grab_focus()
 		return
 	GameSettings.world_seed = int(seed_text) if not seed_text.is_empty() else 0
+	GameSettings.world_name = ""
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	get_tree().change_scene_to_file("res://scenes/main.tscn")
 

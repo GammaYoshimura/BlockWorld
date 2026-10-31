@@ -3,6 +3,7 @@ extends Node3D
 const CrosshairScript = preload("res://scripts/ui/crosshair.gd")
 const HotbarScript = preload("res://scripts/ui/hotbar.gd")
 const PauseMenuScript = preload("res://scripts/ui/pause_menu.gd")
+const SaveManagerScript = preload("res://scripts/world/save_manager.gd")
 
 var _camera: Camera3D
 var _world: World
@@ -29,6 +30,8 @@ func _ready() -> void:
 	add_child(world_environment)
 
 	_build_streamed_world()
+	if GameSettings.world_name.is_empty():
+		GameSettings.world_name = "Mundo-%d" % _world.world_seed
 	_player = Player.new()
 	_player.name = "Player"
 	_player.position = Vector3(
@@ -103,6 +106,23 @@ func _process(delta: float) -> void:
 		_debug_label.visible = not _debug_label.visible
 	if _debug_label.visible:
 		_update_debug_label(delta)
+
+func _exit_tree() -> void:
+	if _world == null or _player == null or _block_interaction == null:
+		return
+	var save_error: Error = SaveManagerScript.save_world_metadata(
+		GameSettings.world_name,
+		_world.world_seed,
+		0.0,
+		_player.global_position,
+		_player.rotation.y,
+		_player.head.rotation.x,
+		_player.is_flying,
+		_block_interaction.slots,
+		_block_interaction.selected
+	)
+	if save_error != OK:
+		push_warning("No se pudo guardar world.json; error %d" % save_error)
 
 func _begin_spawn_loading() -> void:
 	_spawn_pending = true
