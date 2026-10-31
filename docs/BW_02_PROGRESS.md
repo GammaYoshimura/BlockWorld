@@ -67,11 +67,11 @@ Fecha última actualización: 2026-10-31
 - [x] M6.02 — Resaltado de bloque apuntado con cubo de aristas ±0.002 y alcance `PLAYER_REACH`; usuario confirmó que funciona.
 - [x] M6.03 — Clic izquierdo rompe el bloque apuntado salvo bedrock; usuario confirmó que rompe y actualiza el contorno.
 - [x] M6.04 — Chunks editados y vecinos en bordes se remallan preparando mallas por separado y aplicándolas atómicamente; usuario confirmó que funciona.
-- [ ] M6.05 — Clic derecho coloca el bloque seleccionado en `prev` si y está en rango, la celda es AIR/WATER y su AABB no intersecta al jugador.
-- [ ] M6.06 — Hotbar lógica de 9 slots según contrato; rueda y teclas 1–9 cambian selección, overlay muestra slot/id.
-- [ ] M6.07 — Pick block.
-- [ ] M6.08 — Repetición al mantener.
-- [ ] M6.09 — Ediciones sobreviven a descarga.
+- [x] M6.05 — Clic derecho coloca el bloque seleccionado en `prev` si y está en rango, la celda es AIR/WATER y su AABB no intersecta al jugador; usuario confirmó colocación funcional.
+- [x] M6.06 — Hotbar lógica de 9 slots según contrato; rueda y teclas 1–9 cambian selección, overlay muestra slot/id; usuario confirmó que funciona.
+- [ ] M6.07 — Clic central selecciona el bloque si ya está en la hotbar; si no, reemplaza el slot actual.
+- [ ] M6.08 — Mantener clic repite romper/colocar cada `ACTION_REPEAT_SECONDS` (0.25 s).
+- [x] M6.09 — Ediciones sobreviven a descarga: `World` conserva `ChunkData.modified` en `modified_chunks` y lo restaura al regenerar el chunk (implementado en M4.10).
 
 ## Desviaciones del contrato (si las hay, aprobadas por el humano)
 - M1.04: el criterio menciona 25 acciones, pero la lista de la sección 3.7 enumera 24; se implementaron las 24 enumeradas, sin inventar una acción.
