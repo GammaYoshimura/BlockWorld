@@ -1,5 +1,7 @@
 extends Node3D
 
+const CrosshairScript = preload("res://scripts/ui/crosshair.gd")
+
 var _camera: Camera3D
 var _world: World
 var _player: Player
@@ -48,7 +50,7 @@ func _ready() -> void:
 	add_child(_block_interaction)
 
 	var debug_layer: CanvasLayer = CanvasLayer.new()
-	var crosshair: Crosshair = Crosshair.new()
+	var crosshair: Control = CrosshairScript.new()
 	crosshair.name = "Crosshair"
 	debug_layer.add_child(crosshair)
 	_debug_label = Label.new()
