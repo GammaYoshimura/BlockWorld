@@ -57,7 +57,7 @@ Fecha última actualización: 2026-10-31
 - [x] M5.05 — Cada chunk crea `StaticBody3D` con trimesh de la malla sólida (agua excluida), colisión por ambos lados y colisión activa dentro de `COLLISION_RADIUS`; el usuario confirmó que ya no cae.
 - [x] M5.06 — Salto de 1.27 bloques y auto-salto hacia delante hasta un bloque; usuario confirmó que funciona con trayectoria fluida.
 - [x] M5.07 — Ctrl + avanzar acelera a 5.6; Shift reduce a 1.3; caminar mantiene 4.3. Usuario confirmó ambas velocidades.
-- [x] M5.08 — Aparece sobre `height_at(0,0)` y mantiene la física desactivada hasta tener colisiones en radio 2; muestra «Generando mundo…» durante la carga. Implementado junto con M5.05 para evitar caídas durante el inicio.
+- [x] M5.08 — Mantiene la física desactivada hasta tener colisiones en radio 2; busca un punto de tierra cercano con el espacio vertical libre antes de activar al jugador, evitando aparecer dentro de troncos/hojas. Muestra «Generando mundo…» durante la carga.
 - [x] M5.09 — Vuelo con F: sin gravedad, velocidad `FLY_SPEED`, Espacio sube y Shift baja; conserva `move_and_slide()` y colisión. Usuario confirmó que funciona. Restricción a modo creativo/objetos especiales queda como decisión futura.
 - [ ] M5.10 — Al caer bajo Y=-20 reaparece en el spawn y se anula la velocidad; implementación lista, falta comprobar recuperación.
 - [x] M5.11 — Cámara con `fov=70`, `near=0.05` y `far=(render_distance+2)*CHUNK_SIZE`.

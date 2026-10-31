@@ -70,15 +70,54 @@ func _build_streamed_world() -> void:
 
 func _process(_delta: float) -> void:
 	if _spawn_pending and _world.are_collisions_ready(Vector2i.ZERO, 2):
-		_spawn_pending = false
-		_player.set_physics_process(true)
-		_loading_label.visible = false
+		var safe_spawn: Variant = _find_safe_spawn()
+		if safe_spawn is Vector3:
+			_player.global_position = safe_spawn
+			_player.spawn_position = safe_spawn
+			_player.velocity = Vector3.ZERO
+			_spawn_pending = false
+			_player.set_physics_process(true)
+			_loading_label.visible = false
 	if _world != null and _world.last_mesh_build_usec > 0:
 		_mesh_build_ms = float(_world.last_mesh_build_usec) / 1000.0
 	if Input.is_action_just_pressed(&"toggle_debug"):
 		_debug_label.visible = not _debug_label.visible
 	if _debug_label.visible:
 		_update_debug_label()
+
+func _find_safe_spawn() -> Variant:
+	var candidates: Array[Vector2i] = []
+	for dz: int in range(-12, 13):
+		for dx: int in range(-12, 13):
+			candidates.append(Vector2i(dx, dz))
+	candidates.sort_custom(_spawn_candidate_before)
+	for offset: Vector2i in candidates:
+		var wx: int = offset.x
+		var wz: int = offset.y
+		var chunk_coord: Vector2i = Coords.world_to_chunk(wx, wz)
+		if not _world.is_chunk_loaded(chunk_coord):
+			continue
+		var ground_height: int = _world.generator.height_at(wx, wz)
+		if ground_height <= Const.SEA_LEVEL + 2:
+			continue
+		var clear: bool = true
+		for y: int in range(ground_height + 1, ground_height + ceili(Const.PLAYER_HEIGHT)):
+			var block_id: int = _world.get_block(wx, y, wz)
+			if block_id != Blocks.AIR and block_id != Blocks.WATER:
+				clear = false
+				break
+		if clear:
+			return Vector3(float(wx) + 0.5, float(ground_height + 1), float(wz) + 0.5)
+	return null
+
+func _spawn_candidate_before(a: Vector2i, b: Vector2i) -> bool:
+	var distance_a: int = a.length_squared()
+	var distance_b: int = b.length_squared()
+	if distance_a == distance_b:
+		if a.x == b.x:
+			return a.y < b.y
+		return a.x < b.x
+	return distance_a < distance_b
 
 func _update_debug_label() -> void:
 	var camera_position: Vector3 = _camera.global_position
