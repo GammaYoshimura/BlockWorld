@@ -75,7 +75,7 @@ Fecha última actualización: 2026-10-31
 
 ## Fase 7 — Interfaz
 - [x] M7.01 — Mira blanca con contorno negro, centrada en un `Control` a pantalla completa y redibujada según el tamaño del viewport. Falta confirmación visual del usuario.
-- [ ] M7.02 — Hotbar visual de 9 slots prevista.
+- [x] M7.02 — Hotbar inferior con 9 slots, texturas del atlas muestreadas con nearest, borde visible para el seleccionado y actualización al cambiar selección o contenido (pick block). La ventana real muestra la barra; falta confirmación del usuario.
 - [ ] M7.03 — Overlay F3 completo previsto.
 - [ ] M7.04 — Menú de pausa previsto.
 - [ ] M7.05 — Menú principal y semilla prevista.
