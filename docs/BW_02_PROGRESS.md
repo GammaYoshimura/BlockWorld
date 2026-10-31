@@ -77,7 +77,7 @@ Fecha última actualización: 2026-10-31
 - [x] M7.01 — Mira blanca con contorno negro, centrada en un `Control` a pantalla completa y redibujada según el tamaño del viewport. Falta confirmación visual del usuario.
 - [x] M7.02 — Hotbar inferior con 9 slots, texturas del atlas muestreadas con nearest, borde visible para el seleccionado y actualización al cambiar selección o contenido (pick block). La ventana real muestra la barra; falta confirmación del usuario.
 - [x] M7.03 — Overlay F3 incluye FPS y ms/frame, XYZ y bloque, chunk, dirección cardinal, bloque apuntado, conteos de chunks y colisiones, colas de datos/mallas/remallado, último tiempo de mallado y semilla.
-- [ ] M7.04 — Menú de pausa previsto.
+- [x] M7.04 — Esc pausa el árbol de juego, libera el ratón y muestra Continuar/Salir; Esc o Continuar reanuda y captura el ratón. Falta confirmación de uso en juego.
 - [ ] M7.05 — Menú principal y semilla prevista.
 - [ ] M7.06 — Slider de distancia de renderizado previsto.
 
@@ -108,6 +108,7 @@ Fecha última actualización: 2026-10-31
 - `res://scripts/player/block_highlight.gd` · malla de contorno y raycast de selección · M6.02
 - `res://scripts/player/block_interaction.gd` · rompe bloque apuntado con clic izquierdo · M6.03
 - `res://scripts/ui/crosshair.gd` · mira centrada con contorno · M7.01
+- `res://scripts/ui/pause_menu.gd` · menú de pausa procesado aunque el árbol esté pausado · M7.04
 - `res://scripts/world/voxel_raycast.gd` · raycast voxel DDA · M6.01
 - `res://scripts/player/block_interaction.gd` · clase `BlockInteraction` · M1.02
 - `res://scripts/player/block_highlight.gd` · clase `BlockHighlight` · M1.02

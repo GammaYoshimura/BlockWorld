@@ -2,6 +2,7 @@ extends Node3D
 
 const CrosshairScript = preload("res://scripts/ui/crosshair.gd")
 const HotbarScript = preload("res://scripts/ui/hotbar.gd")
+const PauseMenuScript = preload("res://scripts/ui/pause_menu.gd")
 
 var _camera: Camera3D
 var _world: World
@@ -58,6 +59,9 @@ func _ready() -> void:
 	hotbar.name = "Hotbar"
 	hotbar.setup(BlockMaterials.solid().albedo_texture, _block_interaction)
 	debug_layer.add_child(hotbar)
+	var pause_menu: Control = PauseMenuScript.new()
+	pause_menu.name = "PauseMenu"
+	debug_layer.add_child(pause_menu)
 	_debug_label = Label.new()
 	_debug_label.position = Vector2(10.0, 10.0)
 	_debug_label.add_theme_color_override("font_color", Color.WHITE)
