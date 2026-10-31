@@ -12,6 +12,7 @@ var _block_interaction: BlockInteraction
 var _debug_label: Label
 var _loading_label: Label
 var _mesh_build_ms: float = 0.0
+var _peak_frame_ms: float = 0.0
 var _spawn_pending: bool = true
 
 func _ready() -> void:
@@ -84,6 +85,7 @@ func _build_streamed_world() -> void:
 	add_child(_world)
 
 func _process(delta: float) -> void:
+	_peak_frame_ms = maxf(_peak_frame_ms, delta * 1000.0)
 	if not _spawn_pending and _player.global_position.y < -20.0:
 		_begin_spawn_loading()
 	if _spawn_pending and _world.are_collisions_ready(Vector2i.ZERO, 2):
@@ -166,9 +168,10 @@ func _update_debug_label(delta: float = 1.0 / 60.0) -> void:
 	if bool(hit["hit"]):
 		var target: Vector3i = hit["block"]
 		target_description = "%s %s" % [Blocks.name_of(int(hit["block_id"])), str(target)]
-	_debug_label.text = "FPS: %d (%.2f ms/frame)\nXYZ: %.2f / %.2f / %.2f | bloque: %d, %d, %d\nChunk: %d, %d | dirección: %s\nApuntando: %s\nChunks: %d datos / %d mallas / %d colisión\nPendiente: %d datos / %d mallas / %d remallados\nÚltimo mallado: %.2f ms | semilla: %d\nSuelo: %s (vy %.2f) | velocidad: %.2f | vuelo: %s | auto-salto: %s\nHotbar: %d %s" % [
+	_debug_label.text = "FPS: %d (%.2f ms/frame; pico %.2f)\nXYZ: %.2f / %.2f / %.2f | bloque: %d, %d, %d\nChunk: %d, %d | dirección: %s\nApuntando: %s\nChunks: %d datos / %d mallas / %d colisión\nPendiente: %d datos / %d mallas / %d remallados\nMallado: worker %.2f ms / aplicación %.2f ms por frame | semilla: %d\nSuelo: %s (vy %.2f) | velocidad: %.2f | vuelo: %s | auto-salto: %s\nHotbar: %d %s" % [
 		Engine.get_frames_per_second(),
 		maxf(delta, 0.000001) * 1000.0,
+		_peak_frame_ms,
 		_player.global_position.x,
 		_player.global_position.y,
 		_player.global_position.z,
@@ -186,6 +189,7 @@ func _update_debug_label(delta: float = 1.0 / 60.0) -> void:
 		_world.get_pending_mesh_count(),
 		_world.get_pending_dirty_count(),
 		_mesh_build_ms,
+		float(_world.last_mesh_apply_frame_usec) / 1000.0,
 		_world.world_seed,
 		str(_player.is_on_floor()),
 		_player.velocity.y,

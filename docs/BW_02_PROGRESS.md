@@ -85,10 +85,11 @@ Fecha última actualización: 2026-10-31
 - [ ] M8.01 — `ThreadResultQueue` implementada con `Mutex`, `push_result`, `pop_all` y `size`; pendiente verificar el criterio de 100 resultados desde `WorkerThreadPool`.
 - [ ] M8.02 — Streaming genera datos con hasta 4 tareas `WorkerThreadPool`. Cada worker crea sus propios `FastNoiseLite` y devuelve `ChunkData` por la cola segura; falta validar equivalencia y estabilidad al cruzar límites.
 - [ ] M8.03 — Mallado programado en workers a partir de copias de `ChunkData` y vecinos. Se conserva `mesh_version` de todas las fuentes; el hilo principal descarta resultados obsoletos y aplica los builders válidos. Falta validar cambios rápidos durante la carga.
-- [ ] M8.04 — Aplica como máximo una malla de streaming por frame; las mallas de edición se aplican como lote para mantener remallado atómico. Falta medir el costo del lote frente al presupuesto de 3 ms.
+- [ ] M8.04 — Aplica como máximo una malla de streaming por frame; las mallas de edición se aplican como lote para mantener remallado atómico. F3 mide el tiempo total de aplicación por frame; falta confirmar si los lotes quedan dentro de 3 ms.
 - [ ] M8.05 — Colisión trimesh solo en el radio de colisión y se conserva hasta `COLLISION_RADIUS + 1` antes de destruirse (histerésis); pendiente observar recuentos al desplazarse.
 - [ ] M8.06 — Las colas priorizan por distancia y descartan resultados al acabar fuera del radio actual; al descargar un chunk se limpian remallados diferidos. Falta validar el recorrido continuo de 10 s.
 - [ ] M8.07 — `_exit_tree` espera las tareas activas de generación y mallado antes de liberar el mundo; falta confirmar cierre sin errores.
+- [ ] M8.08 — Objetivo en R=8 pendiente de medir en el PC del usuario: 60 FPS estables y picos bajo 25 ms. F3 muestra frame actual/pico, tiempo de mallado worker y aplicación de malla.
 
 ## Desviaciones del contrato (si las hay, aprobadas por el humano)
 - M1.04: el criterio menciona 25 acciones, pero la lista de la sección 3.7 enumera 24; se implementaron las 24 enumeradas, sin inventar una acción.

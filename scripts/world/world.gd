@@ -20,6 +20,7 @@ var modified_chunks: Array[ChunkData] = []
 var _dirty_chunks: Dictionary = {}
 var _pending_dirty_meshes: Dictionary = {}
 var last_mesh_build_usec: int = 0
+var last_mesh_apply_frame_usec: int = 0
 var generator: WorldGenerator
 var world_seed: int
 var render_distance: int = Const.DEFAULT_RENDER_DISTANCE
@@ -100,6 +101,7 @@ func _build_mesh_info(coord: Vector2i) -> Dictionary:
 	}
 
 func update_streaming(world_position: Vector3) -> void:
+	last_mesh_apply_frame_usec = 0
 	var center_chunk: Vector2i = Coords.world_to_chunk(floori(world_position.x), floori(world_position.z))
 	if center_chunk != _stream_center_chunk:
 		_unload_distant_chunks(center_chunk)
@@ -338,7 +340,9 @@ func _apply_mesh_result(coord: Vector2i, result: Dictionary) -> void:
 	var chunk_node: Chunk = chunk_nodes.get(coord) as Chunk
 	if chunk_node == null:
 		return
+	var apply_start_usec: int = Time.get_ticks_usec()
 	chunk_node.apply_mesh(result["mesh"] as Dictionary)
+	last_mesh_apply_frame_usec += Time.get_ticks_usec() - apply_start_usec
 	meshed_chunks[coord] = true
 	last_mesh_build_usec = int(result["usec"])
 
