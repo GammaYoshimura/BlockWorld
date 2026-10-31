@@ -93,6 +93,8 @@ Fecha última actualización: 2026-10-31
 
 ## Fase 9 — Guardado
 - [ ] M9.01 — Al salir, `SaveManager` escribe `user://saves/<nombre>/world.json` con versión, nombre, semilla, tiempo, posición/yaw/pitch/vuelo y hotbar/selección. Falta comprobar archivo y valores tras cerrar.
+- [ ] M9.02 — `SaveManager.save_chunk/load_chunk` usa cabecera `BWCH`, versión 1, tamaño original int32 y compresión Zstd sobre los 16384 bytes. Pendiente confirmar que un chunk plano comprimido queda bajo 2 KB.
+- [ ] M9.03 — El streaming carga archivos de chunks antes de generarlos; chunks modificados se guardan al descargarse y al salir. Falta comprobar persistencia después de cerrar y reabrir.
 
 ## Desviaciones del contrato (si las hay, aprobadas por el humano)
 - M1.04: el criterio menciona 25 acciones, pero la lista de la sección 3.7 enumera 24; se implementaron las 24 enumeradas, sin inventar una acción.
@@ -118,9 +120,9 @@ Fecha última actualización: 2026-10-31
 - `res://scripts/world/chunk_generation_task.gd` · worker estático para generar `ChunkData` sin tocar nodos o diccionarios de escena · M8.02
 - `res://scripts/world/chunk_mesh_task.gd` · worker estático para mallar snapshots de chunks · M8.03
 - `res://scripts/world/chunk.gd` · nodo `Chunk` con mallas y colisión trimesh opcional e histéresis de activación · M8.05
-- `res://scripts/world/world.gd` · streaming, generación/mallado en hilos, presupuesto de aplicación, descarte fuera de rango, cierre de tareas, colisiones y spawn · M8.07
+- `res://scripts/world/world.gd` · streaming, generación/mallado en hilos, persistencia de chunks, descarte fuera de rango, cierre de tareas, colisiones y spawn · M9.03
 - `res://scripts/world/voxel_raycast.gd` · clase `VoxelRaycast` · M1.02
-- `res://scripts/world/save_manager.gd` · escritura segura del archivo de metadatos del mundo · M9.01
+- `res://scripts/world/save_manager.gd` · escritura de metadatos y chunks comprimidos Zstd · M9.02
 - `res://scripts/player/player.gd` · jugador con movimiento, salto, vuelo, respawn y cámara · M5.10
 - `res://scripts/player/block_highlight.gd` · malla de contorno y raycast de selección · M6.02
 - `res://scripts/player/block_interaction.gd` · rompe bloque apuntado con clic izquierdo · M6.03

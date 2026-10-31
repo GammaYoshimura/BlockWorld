@@ -30,8 +30,6 @@ func _ready() -> void:
 	add_child(world_environment)
 
 	_build_streamed_world()
-	if GameSettings.world_name.is_empty():
-		GameSettings.world_name = "Mundo-%d" % _world.world_seed
 	_player = Player.new()
 	_player.name = "Player"
 	_player.position = Vector3(
@@ -83,6 +81,9 @@ func _ready() -> void:
 func _build_streamed_world() -> void:
 	_world = World.new()
 	_world.name = "World"
+	if GameSettings.world_name.is_empty():
+		GameSettings.world_name = "Mundo-%d" % _world.world_seed
+	_world.save_name = GameSettings.world_name
 	_world.set_render_distance(GameSettings.render_distance)
 	_world.stream_target = _camera
 	add_child(_world)

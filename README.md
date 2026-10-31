@@ -21,6 +21,8 @@ La carpeta `.godot/` es caché local y está excluida de Git. Godot la recrea al
 - Fase 6: M6.01–M6.06 confirmados y M6.09 implementado. Pick block y repetición al mantener clic añadidos; falta comprobarlos. Fase 7 implementada: mira, hotbar visual, overlay F3, pausa, menú inicial con semilla y slider de distancia de renderizado; pendientes de confirmación de uso.
 - Fase 8: cola de resultados con `Mutex`, generación/mallado en `WorkerThreadPool`, una aplicación de malla de streaming por frame, descarte de tareas fuera de rango y espera de tareas al cerrar implementados. F3 muestra picos de frame y tiempos separados de mallado/aplicación; falta validar equivalencia, edición durante carga y cierre limpio.
 - Fase 9 iniciada: al salir del mundo se escribe `world.json` con semilla y estado del jugador/hotbar; falta verificar el archivo.
+- M9.02 añade lectura/escritura comprimida de chunks modificados (`BWCH` + Zstd); aún falta conectarla al streaming.
+- M9.03 conecta los archivos al streaming y guarda chunks editados al descargarlos o salir; falta comprobar que reaparecen al reabrir.
 - Las hojas usan transparencia recortada con un patrón pseudoaleatorio mezclado para evitar artefactos diagonales repetitivos.
 - La escena principal arranca sin errores en la salida del Godot MCP. El jugador no activa la física hasta que las colisiones cercanas están listas. La colocación de bloques permite contacto exacto bajo los pies para apilar; falta confirmar en juego el caso de saltar, colocar y aterrizar sobre ese bloque.
 

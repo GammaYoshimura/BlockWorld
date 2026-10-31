@@ -10,6 +10,7 @@ const CHUNK_NEIGHBOR_OFFSETS: Array[Vector2i] = [
 const ChunkGenerationTask = preload("res://scripts/world/chunk_generation_task.gd")
 const ChunkMeshTask = preload("res://scripts/world/chunk_mesh_task.gd")
 const ThreadResultQueueScript = preload("res://scripts/util/thread_result_queue.gd")
+const SaveManagerScript = preload("res://scripts/world/save_manager.gd")
 const MAX_GENERATION_TASKS: int = 4
 const MAX_MESH_TASKS: int = 4
 
@@ -23,6 +24,7 @@ var last_mesh_build_usec: int = 0
 var last_mesh_apply_frame_usec: int = 0
 var generator: WorldGenerator
 var world_seed: int
+var save_name: String = ""
 var render_distance: int = Const.DEFAULT_RENDER_DISTANCE
 var stream_target: Node3D
 var _stream_center_chunk: Vector2i = Vector2i(2147483647, 2147483647)
@@ -47,6 +49,11 @@ func _exit_tree() -> void:
 		WorkerThreadPool.wait_for_task_completion(int(task_id_variant))
 	for task_id_variant: Variant in _mesh_tasks.keys():
 		WorkerThreadPool.wait_for_task_completion(int(task_id_variant))
+	if not save_name.is_empty():
+		for data_variant: Variant in chunks.values():
+			_save_modified_chunk(data_variant as ChunkData)
+		for data_variant: Variant in modified_chunks:
+			_save_modified_chunk(data_variant as ChunkData)
 
 func ensure_chunk(cx: int, cz: int) -> ChunkData:
 	var coord: Vector2i = Vector2i(cx, cz)
@@ -54,6 +61,8 @@ func ensure_chunk(cx: int, cz: int) -> ChunkData:
 		return chunks[coord] as ChunkData
 
 	var data: ChunkData = _take_modified_chunk(coord)
+	if data == null:
+		data = _load_saved_chunk(coord)
 	if data == null:
 		data = generator.generate(cx, cz)
 	_register_chunk_data(data)
@@ -194,6 +203,14 @@ func _process_one_data_chunk() -> void:
 	var coord: Vector2i = _data_queue.pop_front()
 	if chunks.has(coord) or _is_generation_active(coord):
 		return
+	var modified_data: ChunkData = _take_modified_chunk(coord)
+	if modified_data != null:
+		_register_chunk_data(modified_data)
+		return
+	var saved_data: ChunkData = _load_saved_chunk(coord)
+	if saved_data != null:
+		_register_chunk_data(saved_data)
+		return
 	var task_id: int = WorkerThreadPool.add_task(
 		Callable(ChunkGenerationTask, "run").bind(world_seed, coord, _generation_results),
 		false,
@@ -216,6 +233,18 @@ func _process_generation_results() -> void:
 
 func _is_generation_active(coord: Vector2i) -> bool:
 	return _generation_tasks.values().has(coord)
+
+func _load_saved_chunk(coord: Vector2i) -> ChunkData:
+	if save_name.is_empty():
+		return null
+	return SaveManagerScript.load_chunk(save_name, coord)
+
+func _save_modified_chunk(data: ChunkData) -> void:
+	if data == null or not data.modified:
+		return
+	var save_error: Error = SaveManagerScript.save_chunk(save_name, data)
+	if save_error != OK:
+		push_warning("No se pudo guardar el chunk %s; error %d" % [str(data.coord), save_error])
 
 func _is_in_data_range(coord: Vector2i) -> bool:
 	var radius: int = render_distance + 1
@@ -355,8 +384,10 @@ func _unload_distant_chunks(center_chunk: Vector2i) -> void:
 			continue
 
 		var data: ChunkData = chunks[coord] as ChunkData
-		if data.modified and not modified_chunks.has(data):
-			modified_chunks.append(data)
+		if data.modified:
+			_save_modified_chunk(data)
+			if not modified_chunks.has(data):
+				modified_chunks.append(data)
 		var chunk_node: Chunk = chunk_nodes.get(coord) as Chunk
 		if chunk_node != null:
 			chunk_node.queue_free()
