@@ -16,9 +16,9 @@ La carpeta `.godot/` es caché local y está excluida de Git. Godot la recrea al
 
 ## Estado actual
 
-- Fases 1–4 completas hasta M4.11; Fase 5 implementada hasta M5.05 y M5.08. M5.06 está implementado con salto normal y auto-salto hacia delante al chocar con un bloque; falta confirmar visualmente el auto-salto.
+- Fases 1–4 completas hasta M4.11; Fase 5 implementada hasta M5.08. El usuario confirmó que el salto normal y el auto-salto de un bloque funcionan y se sienten fluidos; falta comprobar sprint y agacharse.
 - El mundo de `main.tscn` carga terreno procedural alrededor de la cámara del jugador. Genera como máximo un chunk de datos y una malla por frame; descarga chunks a distancia y conserva los modificados en memoria. Incluye agua, árboles, cuevas y semilla de sesión.
-- Siguiente hito según el plan: **M5.06 — Salto y auto-salto de un bloque** en `docs/BW_06_FASE_5_jugador.md`.
+- Siguiente hito según el plan: **M5.07 — Sprint y agacharse** en `docs/BW_06_FASE_5_jugador.md`.
 - Las hojas usan transparencia recortada con un patrón pseudoaleatorio mezclado para evitar artefactos diagonales repetitivos.
 - La escena principal arranca sin errores en la salida del Godot MCP. El jugador no activa la física hasta que las colisiones cercanas están listas.
 
@@ -41,7 +41,7 @@ Los documentos de fases describen el diseño previsto; `BW_02_PROGRESS.md` y el 
 
 ## Continuación recomendada
 
-1. Retomar por M5.06 según `docs/BW_06_FASE_5_jugador.md`.
+1. Retomar por M5.07 según `docs/BW_06_FASE_5_jugador.md`.
 2. Mantener `docs/BW_02_PROGRESS.md` actualizado.
 3. Usar Godot MCP para ejecutar el juego o el runner en este equipo si las teclas F no están disponibles.
 4. No cerrar el problema visual de la pantalla gris hasta comprobar las texturas en la ventana real.

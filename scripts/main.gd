@@ -70,7 +70,8 @@ func _process(_delta: float) -> void:
 
 func _update_debug_label() -> void:
 	var camera_position: Vector3 = _camera.global_position
-	_debug_label.text = "FPS: %d\nMesh: %s ms\nChunks: %d data / %d mesh\nCollision chunks: %d\nFloor: %s (vy %s)\nStep: %s\nPos: %s, %s, %s" % [
+	var horizontal_speed: float = Vector2(_player.velocity.x, _player.velocity.z).length()
+	_debug_label.text = "FPS: %d\nMesh: %s ms\nChunks: %d data / %d mesh\nCollision chunks: %d\nFloor: %s (vy %s)\nSpeed: %s / Step: %s\nPos: %s, %s, %s" % [
 		Engine.get_frames_per_second(),
 		String.num(_mesh_build_ms, 2),
 		_world.chunks.size(),
@@ -78,6 +79,7 @@ func _update_debug_label() -> void:
 		_world.get_collision_chunk_count(),
 		str(_player.is_on_floor()),
 		String.num(_player.velocity.y, 2),
+		String.num(horizontal_speed, 2),
 		_player.auto_step_status,
 		String.num(camera_position.x, 2),
 		String.num(camera_position.y, 2),

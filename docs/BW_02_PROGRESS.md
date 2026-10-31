@@ -55,8 +55,8 @@ Fecha última actualización: 2026-10-31
 - [x] M5.03 — Movimiento horizontal con `Input.get_vector`, velocidad objetivo `WALK_SPEED` (4.3) normalizada también en diagonal, aceleración suelo/aire 60/20 y frenado al soltar.
 - [x] M5.04 — Gravedad `32 m/s²` limitada a `-60`, velocidad vertical descendente anulada al tocar suelo.
 - [x] M5.05 — Cada chunk crea `StaticBody3D` con trimesh de la malla sólida (agua excluida), colisión por ambos lados y colisión activa dentro de `COLLISION_RADIUS`; el usuario confirmó que ya no cae.
-- [ ] M5.06 — Salto confirmado (altura teórica 1.27 bloques); auto-salto hacia delante usa la misma velocidad normal de salto si se choca en el suelo con un desnivel de hasta `Const.AUTO_STEP_HEIGHT=1.0`, tras comprobar superficie y espacio libre. Pendiente confirmar que sube 1 bloque con trayectoria natural y no auto-salta ante 2.
-- [ ] M5.07 — Sprint y agacharse.
+- [x] M5.06 — Salto de 1.27 bloques y auto-salto hacia delante hasta un bloque; usuario confirmó que funciona con trayectoria fluida.
+- [ ] M5.07 — Sprint (5.6 solo avanzando) y agacharse (1.3), con caminar a 4.3. El overlay muestra la velocidad horizontal para comprobarlo.
 - [x] M5.08 — Aparece sobre `height_at(0,0)` y mantiene la física desactivada hasta tener colisiones en radio 2; muestra «Generando mundo…» durante la carga. Implementado junto con M5.05 para evitar caídas durante el inicio.
 - [ ] M5.09 — Modo vuelo.
 - [ ] M5.10 — Reaparición.

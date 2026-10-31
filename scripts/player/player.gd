@@ -15,7 +15,13 @@ func _physics_process(delta: float) -> void:
 	)
 	var local_direction: Vector3 = Vector3(input_direction.x, 0.0, input_direction.y)
 	var wish_direction: Vector3 = (transform.basis * local_direction).normalized()
-	var target_velocity: Vector3 = wish_direction * Const.WALK_SPEED
+	var target_speed: float = Const.WALK_SPEED
+	var moving_forward: bool = input_direction.y < -0.01
+	if Input.is_action_pressed(&"sneak"):
+		target_speed = Const.SNEAK_SPEED
+	elif Input.is_action_pressed(&"sprint") and moving_forward:
+		target_speed = Const.SPRINT_SPEED
+	var target_velocity: Vector3 = wish_direction * target_speed
 	var acceleration: float = 60.0 if is_on_floor() else 20.0
 	var was_on_floor: bool = is_on_floor()
 	velocity.x = move_toward(velocity.x, target_velocity.x, acceleration * delta)
