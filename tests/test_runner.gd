@@ -54,6 +54,8 @@ func _ready() -> void:
 	_test_world_generator_deterministic()
 	_current_milestone = "M4.03"
 	_test_height_map()
+	_current_milestone = "M4.04"
+	_test_terrain_layers()
 
 func _test_world_to_chunk_and_local() -> void:
 	for test_case: Vector3i in COORD_CASES:
@@ -374,7 +376,7 @@ func _test_world_chunk_manager() -> void:
 	add_child(world)
 	var first_data: ChunkData = world.ensure_chunk(-2, 2)
 	_check(first_data.coord == Vector2i(-2, 2), "ensure_chunk conserva coordenadas negativas")
-	_check(first_data.get_block(0, 20, 0) == Blocks.GRASS, "ensure_chunk crea datos planos")
+	_check(first_data.get_block(0, 0, 0) == Blocks.BEDROCK, "ensure_chunk genera datos de terreno")
 	_check(world.ensure_chunk(-2, 2) == first_data, "ensure_chunk reutiliza los datos existentes")
 	_check(world.chunks.size() == 1 and world.chunk_nodes.size() == 1, "ensure_chunk no duplica chunks")
 	_check(not world.remesh(Vector2i(-2, 2)), "remesh espera a los cuatro vecinos")
@@ -424,9 +426,48 @@ func _test_height_map() -> void:
 	var sampled_height: int = generator.height_at(7, 9)
 	_check(sampled_height == generator.height_at(7, 9), "height_at es determinista para la misma coordenada")
 
+func _test_terrain_layers() -> void:
+	var generator: WorldGenerator = WorldGenerator.new(12345)
+	var all_columns_valid: bool = true
+	var found_beach: bool = false
+	var found_grass: bool = false
+	for cz: int in range(-1, 2):
+		for cx: int in range(-1, 2):
+			var data: ChunkData = generator.generate(cx, cz)
+			for local_z: int in range(Const.CHUNK_SIZE):
+				for local_x: int in range(Const.CHUNK_SIZE):
+					var world_x: int = cx * Const.CHUNK_SIZE + local_x
+					var world_z: int = cz * Const.CHUNK_SIZE + local_z
+					var height: int = generator.height_at(world_x, world_z)
+					var is_beach: bool = height <= Const.SEA_LEVEL + 2
+					found_beach = found_beach or is_beach
+					found_grass = found_grass or not is_beach
+					if data.get_block(local_x, 0, local_z) != Blocks.BEDROCK:
+						all_columns_valid = false
+					if data.get_block(local_x, height, local_z) != (Blocks.SAND if is_beach else Blocks.GRASS):
+						all_columns_valid = false
+					for y: int in range(1, height - 3):
+						if data.get_block(local_x, y, local_z) != Blocks.STONE:
+							all_columns_valid = false
+					for y: int in range(height - 3, height):
+						var expected_block: int = Blocks.SAND if is_beach and y >= height - 2 else Blocks.DIRT
+						if data.get_block(local_x, y, local_z) != expected_block:
+							all_columns_valid = false
+					for y: int in range(height + 1, Const.CHUNK_HEIGHT):
+						if data.get_block(local_x, y, local_z) != Blocks.AIR:
+							all_columns_valid = false
+					if is_beach:
+						for y: int in range(height - 2, height):
+							if data.get_block(local_x, y, local_z) != Blocks.SAND:
+								all_columns_valid = false
+	_check(all_columns_valid, "3x3 terrain conserva bedrock, capas llenas, superficie y aire encima")
+	_check(found_beach, "3x3 terrain incluye columnas de playa")
+	_check(found_grass, "3x3 terrain incluye columnas de césped")
+	_check(not generator.generate(0, 0).modified, "chunk generado no queda marcado como modificado por el usuario")
+
 @warning_ignore("shadowed_variable_base_class")
 func _check(cond: bool, name: String) -> void:
 	if cond:
-		print("PASS ", _current_milestone, " ", name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11 # DEBUG-M4.01 # DEBUG-M4.02 # DEBUG-M4.03
+		print("PASS ", _current_milestone, " ", name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11 # DEBUG-M4.01 # DEBUG-M4.02 # DEBUG-M4.03 # DEBUG-M4.04
 	else:
-		push_error("FAIL " + _current_milestone + " " + name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11 # DEBUG-M4.01 # DEBUG-M4.02 # DEBUG-M4.03
+		push_error("FAIL " + _current_milestone + " " + name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11 # DEBUG-M4.01 # DEBUG-M4.02 # DEBUG-M4.03 # DEBUG-M4.04

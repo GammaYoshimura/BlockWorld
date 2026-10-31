@@ -38,9 +38,9 @@ Fecha última actualización: 2026-10-31
 
 ## Fase 4 — Mundo y terreno
 - [x] M4.01 — Gestor de chunks estático (`World.ensure_chunk` crea/reutiliza datos y nodo; `World.remesh` espera los cuatro vecinos; el caso 5×5 malló solo los 9 chunks interiores y dejó el borde sin malla).
-- [x] M4.02 — `WorldGenerator` determinista (`generate(cx,cz)` devuelve un `ChunkData` plano independiente, con coordenadas y marca `generated`; misma semilla/coordenada produce los mismos bloques).
+- [x] M4.02 — `WorldGenerator` determinista (`generate(cx,cz)` retorna un `ChunkData` independiente con coordenadas y marca `generated`; misma semilla/coordenada produce los mismos bloques; se extendió con terreno en M4.03–M4.04).
 - [x] M4.03 — Mapa de alturas con FastNoiseLite Simplex Smooth + FBM (semilla 12345; barrido 256×256 dentro de Y=14..42; cruces X=15/16 y -1/0 continuos en ≤3 bloques; llamadas repetidas deterministas).
-- [ ] M4.04 — Capas del terreno.
+- [x] M4.04 — Capas de terreno integradas en el generador y `World`: bedrock, stone, dirt, hierba y tres capas superiores de arena en playas. El barrido 3×3 comprobó todas las capas, superficie y aire sobre el terreno; encontró playa y césped; chunks generados quedan `modified=false`.
 - [ ] M4.05 — Agua.
 - [ ] M4.06 — Mallado del agua.
 - [ ] M4.07 — Árboles deterministas.
@@ -69,7 +69,7 @@ Fecha última actualización: 2026-10-31
 - `res://scripts/world/chunk_mesher.gd` · clase `ChunkMesher` optimizada para acceso directo a bytes y caras expuestas · M3.12
 - `res://scripts/world/world_generator.gd` · `WorldGenerator(world_seed)`, generación pura de chunks planos y mapa de alturas determinista · M4.03
 - `res://scripts/world/chunk.gd` · nodo `Chunk` con `SolidMesh`, `WaterMesh`, `apply_mesh`, AABB y material sólido compartido · M3.07
-- `res://scripts/world/world.gd` · gestor de datos y nodos de chunk con remallado condicionado por vecinos · M4.01
+- `res://scripts/world/world.gd` · gestor de datos y nodos de chunk con remallado condicionado por vecinos; usa `WorldGenerator` · M4.04
 - `res://scripts/world/voxel_raycast.gd` · clase `VoxelRaycast` · M1.02
 - `res://scripts/world/save_manager.gd` · clase `SaveManager` · M1.02
 - `res://scripts/player/player.gd` · clase `Player` · M1.02

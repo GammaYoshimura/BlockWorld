@@ -11,14 +11,17 @@ const CHUNK_NEIGHBOR_OFFSETS: Array[Vector2i] = [
 var chunks: Dictionary = {}
 var chunk_nodes: Dictionary = {}
 var last_mesh_build_usec: int = 0
+var generator: WorldGenerator
+
+func _init(world_seed: int = 0) -> void:
+	generator = WorldGenerator.new(world_seed)
 
 func ensure_chunk(cx: int, cz: int) -> ChunkData:
 	var coord: Vector2i = Vector2i(cx, cz)
 	if chunks.has(coord):
 		return chunks[coord] as ChunkData
 
-	var data: ChunkData = ChunkData.new(coord)
-	data.fill_flat()
+	var data: ChunkData = generator.generate(cx, cz)
 	chunks[coord] = data
 
 	var chunk_node: Chunk = Chunk.new(coord)
