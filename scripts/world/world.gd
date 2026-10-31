@@ -8,8 +8,10 @@ const CHUNK_NEIGHBOR_OFFSETS: Array[Vector2i] = [
 	Vector2i(0, 1)
 ]
 const ChunkGenerationTask = preload("res://scripts/world/chunk_generation_task.gd")
+const ChunkMeshTask = preload("res://scripts/world/chunk_mesh_task.gd")
 const ThreadResultQueueScript = preload("res://scripts/util/thread_result_queue.gd")
 const MAX_GENERATION_TASKS: int = 4
+const MAX_MESH_TASKS: int = 4
 
 var chunks: Dictionary = {}
 var chunk_nodes: Dictionary = {}
@@ -27,6 +29,8 @@ var _data_queue: Array[Vector2i] = []
 var _mesh_queue: Array[Vector2i] = []
 var _generation_tasks: Dictionary = {}
 var _generation_results: RefCounted = ThreadResultQueueScript.new()
+var _mesh_tasks: Dictionary = {}
+var _mesh_results: RefCounted = ThreadResultQueueScript.new()
 
 func _init(seed_override: int = 0) -> void:
 	world_seed = seed_override if seed_override != 0 else GameSettings.resolve_world_seed()
@@ -90,6 +94,7 @@ func _build_mesh_info(coord: Vector2i) -> Dictionary:
 
 func update_streaming(world_position: Vector3) -> void:
 	_process_generation_results()
+	_process_mesh_results()
 	var center_chunk: Vector2i = Coords.world_to_chunk(floori(world_position.x), floori(world_position.z))
 	if center_chunk != _stream_center_chunk:
 		_unload_distant_chunks(center_chunk)
@@ -107,7 +112,7 @@ func get_pending_data_count() -> int:
 	return _data_queue.size() + _generation_tasks.size()
 
 func get_pending_mesh_count() -> int:
-	return _mesh_queue.size()
+	return _mesh_queue.size() + _mesh_tasks.size()
 
 func get_pending_dirty_count() -> int:
 	return _dirty_chunks.size()
@@ -199,8 +204,104 @@ func _process_one_mesh_chunk() -> void:
 	if _mesh_queue.is_empty():
 		return
 	var coord: Vector2i = _mesh_queue.pop_front()
-	if not remesh(coord):
+	if meshed_chunks.has(coord) or _is_mesh_active(coord):
+		return
+	if _mesh_tasks.size() >= MAX_MESH_TASKS:
+		_mesh_queue.push_front(coord)
+		return
+	if not _schedule_mesh_task(coord, "stream"):
 		_mesh_queue.append(coord)
+
+func _schedule_mesh_task(coord: Vector2i, purpose: String) -> bool:
+	if _mesh_tasks.size() >= MAX_MESH_TASKS or _is_mesh_active(coord):
+		return false
+	var snapshot: Dictionary = _make_mesh_snapshot(coord)
+	if snapshot.is_empty():
+		return false
+	var task_id: int = WorkerThreadPool.add_task(
+		Callable(ChunkMeshTask, "run").bind(
+			coord,
+		snapshot["data"],
+		snapshot["neighbors"],
+		snapshot["versions"],
+		purpose,
+		_mesh_results
+		),
+		false,
+		"Mesh chunk %d,%d" % [coord.x, coord.y]
+	)
+	_mesh_tasks[task_id] = {"coord": coord, "purpose": purpose}
+	return true
+
+func _make_mesh_snapshot(coord: Vector2i) -> Dictionary:
+	var source: ChunkData = chunks.get(coord) as ChunkData
+	if source == null or not chunk_nodes.has(coord):
+		return {}
+	var versions: Dictionary = {coord: source.mesh_version}
+	var neighbors: Dictionary = {}
+	for offset: Vector2i in CHUNK_NEIGHBOR_OFFSETS:
+		var neighbor_coord: Vector2i = coord + offset
+		var neighbor_source: ChunkData = chunks.get(neighbor_coord) as ChunkData
+		if neighbor_source == null:
+			return {}
+		versions[neighbor_coord] = neighbor_source.mesh_version
+		neighbors[offset] = _copy_chunk_data(neighbor_source)
+	return {
+		"data": _copy_chunk_data(source),
+		"neighbors": neighbors,
+		"versions": versions
+	}
+
+func _copy_chunk_data(source: ChunkData) -> ChunkData:
+	var snapshot: ChunkData = ChunkData.new(source.coord)
+	snapshot.blocks = source.blocks.duplicate()
+	snapshot.generated = source.generated
+	snapshot.modified = source.modified
+	snapshot.mesh_version = source.mesh_version
+	return snapshot
+
+func _is_mesh_active(coord: Vector2i) -> bool:
+	for task_variant: Variant in _mesh_tasks.values():
+		if Vector2i(task_variant["coord"]) == coord:
+			return true
+	return false
+
+func _mesh_versions_match(versions: Dictionary) -> bool:
+	for coord_variant: Variant in versions.keys():
+		var coord: Vector2i = coord_variant as Vector2i
+		var data: ChunkData = chunks.get(coord) as ChunkData
+		if data == null or data.mesh_version != int(versions[coord]):
+			return false
+	return true
+
+func _process_mesh_results() -> void:
+	for task_id_variant: Variant in _mesh_tasks.keys():
+		var task_id: int = int(task_id_variant)
+		if WorkerThreadPool.is_task_completed(task_id):
+			WorkerThreadPool.wait_for_task_completion(task_id)
+			_mesh_tasks.erase(task_id)
+	var results: Array = _mesh_results.call("pop_all")
+	for result_variant: Variant in results:
+		var result: Dictionary = result_variant as Dictionary
+		var coord: Vector2i = result["coord"] as Vector2i
+		if not _mesh_versions_match(result["versions"] as Dictionary):
+			if result["purpose"] == "dirty":
+				_pending_dirty_meshes.erase(coord)
+			elif not _mesh_queue.has(coord) and not meshed_chunks.has(coord):
+				_mesh_queue.append(coord)
+			continue
+		if result["purpose"] == "dirty":
+			_pending_dirty_meshes[coord] = result
+		else:
+			_apply_mesh_result(coord, result)
+
+func _apply_mesh_result(coord: Vector2i, result: Dictionary) -> void:
+	var chunk_node: Chunk = chunk_nodes.get(coord) as Chunk
+	if chunk_node == null:
+		return
+	chunk_node.apply_mesh(result["mesh"] as Dictionary)
+	meshed_chunks[coord] = true
+	last_mesh_build_usec = int(result["usec"])
 
 func _unload_distant_chunks(center_chunk: Vector2i) -> void:
 	var unload_radius: int = render_distance + Const.UNLOAD_MARGIN
@@ -277,21 +378,18 @@ func _process_one_dirty_chunk() -> void:
 			_dirty_chunks.erase(coord)
 			_pending_dirty_meshes.erase(coord)
 			continue
-		var pending: Dictionary = _pending_dirty_meshes.get(coord, {}) as Dictionary
-		if not pending.is_empty() and int(pending["version"]) == chunk_data.mesh_version:
-			continue
-		var build_info: Dictionary = _build_mesh_info(coord)
-		if build_info.is_empty():
-			continue
-		last_mesh_build_usec = int(build_info["usec"])
-		_pending_dirty_meshes[coord] = build_info
-		break
+		if _pending_dirty_meshes.has(coord):
+			var pending: Dictionary = _pending_dirty_meshes[coord] as Dictionary
+			if _mesh_versions_match(pending["versions"] as Dictionary):
+				continue
+			_pending_dirty_meshes.erase(coord)
+		if not _is_mesh_active(coord):
+			_schedule_mesh_task(coord, "dirty")
 
 	for coord_variant: Variant in _dirty_chunks.keys():
 		var coord: Vector2i = coord_variant as Vector2i
-		var chunk_data: ChunkData = chunks.get(coord) as ChunkData
 		var pending: Dictionary = _pending_dirty_meshes.get(coord, {}) as Dictionary
-		if chunk_data == null or pending.is_empty() or int(pending["version"]) != chunk_data.mesh_version:
+		if pending.is_empty() or not _mesh_versions_match(pending["versions"] as Dictionary):
 			return
 
 	for coord_variant: Variant in _dirty_chunks.keys():
@@ -300,8 +398,7 @@ func _process_one_dirty_chunk() -> void:
 		if chunk_node == null:
 			continue
 		var pending: Dictionary = _pending_dirty_meshes[coord] as Dictionary
-		chunk_node.apply_mesh(pending["mesh"])
-		meshed_chunks[coord] = true
+		_apply_mesh_result(coord, pending)
 	_dirty_chunks.clear()
 	_pending_dirty_meshes.clear()
 
