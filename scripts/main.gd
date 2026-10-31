@@ -15,6 +15,7 @@ var _loading_label: Label
 var _mesh_build_ms: float = 0.0
 var _peak_frame_ms: float = 0.0
 var _spawn_pending: bool = true
+var _autosave_timer: Timer
 
 func _ready() -> void:
 	var light: DirectionalLight3D = DirectionalLight3D.new()
@@ -76,6 +77,14 @@ func _ready() -> void:
 	_loading_label.text = "Generando mundo…"
 	debug_layer.add_child(_loading_label)
 	add_child(debug_layer)
+	_autosave_timer = Timer.new()
+	_autosave_timer.name = "AutosaveTimer"
+	_autosave_timer.wait_time = 60.0
+	_autosave_timer.one_shot = false
+	_autosave_timer.process_mode = Node.PROCESS_MODE_ALWAYS
+	_autosave_timer.timeout.connect(_autosave_world)
+	add_child(_autosave_timer)
+	_autosave_timer.start()
 	_update_debug_label()
 
 func _build_streamed_world() -> void:
@@ -111,6 +120,12 @@ func _process(delta: float) -> void:
 func _exit_tree() -> void:
 	if _world == null or _player == null or _block_interaction == null:
 		return
+	_autosave_world()
+
+func _autosave_world() -> void:
+	if _world == null or _player == null or _block_interaction == null:
+		return
+	_world.save_modified_chunks()
 	var save_error: Error = SaveManagerScript.save_world_metadata(
 		GameSettings.world_name,
 		_world.world_seed,
@@ -123,7 +138,7 @@ func _exit_tree() -> void:
 		_block_interaction.selected
 	)
 	if save_error != OK:
-		push_warning("No se pudo guardar world.json; error %d" % save_error)
+		push_warning("No se pudo guardar el mundo; error %d" % save_error)
 
 func _begin_spawn_loading() -> void:
 	_spawn_pending = true

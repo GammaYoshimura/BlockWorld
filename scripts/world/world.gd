@@ -35,6 +35,7 @@ var _generation_results: RefCounted = ThreadResultQueueScript.new()
 var _mesh_tasks: Dictionary = {}
 var _mesh_results: RefCounted = ThreadResultQueueScript.new()
 var _ready_mesh_applications: Array[Dictionary] = []
+var _saved_chunk_versions: Dictionary = {}
 
 func _init(seed_override: int = 0) -> void:
 	world_seed = seed_override if seed_override != 0 else GameSettings.resolve_world_seed()
@@ -49,11 +50,15 @@ func _exit_tree() -> void:
 		WorkerThreadPool.wait_for_task_completion(int(task_id_variant))
 	for task_id_variant: Variant in _mesh_tasks.keys():
 		WorkerThreadPool.wait_for_task_completion(int(task_id_variant))
-	if not save_name.is_empty():
-		for data_variant: Variant in chunks.values():
-			_save_modified_chunk(data_variant as ChunkData)
-		for data_variant: Variant in modified_chunks:
-			_save_modified_chunk(data_variant as ChunkData)
+	save_modified_chunks()
+
+func save_modified_chunks() -> void:
+	if save_name.is_empty():
+		return
+	for data_variant: Variant in chunks.values():
+		_save_modified_chunk(data_variant as ChunkData)
+	for data_variant: Variant in modified_chunks:
+		_save_modified_chunk(data_variant as ChunkData)
 
 func ensure_chunk(cx: int, cz: int) -> ChunkData:
 	var coord: Vector2i = Vector2i(cx, cz)
@@ -242,9 +247,13 @@ func _load_saved_chunk(coord: Vector2i) -> ChunkData:
 func _save_modified_chunk(data: ChunkData) -> void:
 	if data == null or not data.modified:
 		return
+	if int(_saved_chunk_versions.get(data.coord, -1)) == data.mesh_version:
+		return
 	var save_error: Error = SaveManagerScript.save_chunk(save_name, data)
 	if save_error != OK:
 		push_warning("No se pudo guardar el chunk %s; error %d" % [str(data.coord), save_error])
+	else:
+		_saved_chunk_versions[data.coord] = data.mesh_version
 
 func _is_in_data_range(coord: Vector2i) -> bool:
 	var radius: int = render_distance + 1

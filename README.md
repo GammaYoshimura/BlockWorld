@@ -23,6 +23,8 @@ La carpeta `.godot/` es caché local y está excluida de Git. Godot la recrea al
 - Fase 9 iniciada: al salir del mundo se escribe `world.json` con semilla y estado del jugador/hotbar; falta verificar el archivo.
 - M9.02 añade lectura/escritura comprimida de chunks modificados (`BWCH` + Zstd); aún falta conectarla al streaming.
 - M9.03 conecta los archivos al streaming y guarda chunks editados al descargarlos o salir; falta comprobar que reaparecen al reabrir.
+- M9.04 añade escritura temporal con rename y autosave cada 60 segundos, también al salir.
+- La carga ignora y regenera chunks con cabecera o datos comprimidos inválidos, mostrando un warning; queda pendiente forzar el caso corrupto.
 - Las hojas usan transparencia recortada con un patrón pseudoaleatorio mezclado para evitar artefactos diagonales repetitivos.
 - La escena principal arranca sin errores en la salida del Godot MCP. El jugador no activa la física hasta que las colisiones cercanas están listas. La colocación de bloques permite contacto exacto bajo los pies para apilar; falta confirmar en juego el caso de saltar, colocar y aterrizar sobre ese bloque.
 

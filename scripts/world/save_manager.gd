@@ -32,13 +32,8 @@ static func save_world_metadata(
 		"hotbar": hotbar_slots,
 		"selected": selected_slot
 	}
-	var file: FileAccess = FileAccess.open("%s/world.json" % relative_directory, FileAccess.WRITE)
-	if file == null:
-		return FileAccess.get_open_error()
-	file.store_string(JSON.stringify(save_data, "\t"))
-	var write_error: Error = file.get_error()
-	file.close()
-	return write_error
+	var json_bytes: PackedByteArray = JSON.stringify(save_data, "\t").to_utf8_buffer()
+	return _write_atomic("%s/world.json" % relative_directory, json_bytes)
 
 static func _safe_save_name(world_name: String) -> String:
 	var name: String = world_name.strip_edges()
@@ -57,18 +52,15 @@ static func save_chunk(world_name: String, data: ChunkData) -> Error:
 	var directory_error: Error = DirAccess.make_dir_recursive_absolute(absolute_directory)
 	if directory_error != OK:
 		return directory_error
-	var file_path: String = "%s/%d_%d.bin" % [directory, data.coord.x, data.coord.y]
-	var file: FileAccess = FileAccess.open(file_path, FileAccess.WRITE)
-	if file == null:
-		return FileAccess.get_open_error()
 	var compressed: PackedByteArray = data.blocks.compress(FileAccess.COMPRESSION_ZSTD)
-	file.store_buffer("BWCH".to_ascii_buffer())
-	file.store_8(1)
-	file.store_32(data.blocks.size())
-	file.store_buffer(compressed)
-	var write_error: Error = file.get_error()
-	file.close()
-	return write_error
+	var chunk_bytes: PackedByteArray = "BWCH".to_ascii_buffer()
+	chunk_bytes.append(1)
+	var original_size: int = data.blocks.size()
+	for shift: int in [0, 8, 16, 24]:
+		chunk_bytes.append((original_size >> shift) & 0xFF)
+	chunk_bytes.append_array(compressed)
+	var file_path: String = "%s/%d_%d.bin" % [directory, data.coord.x, data.coord.y]
+	return _write_atomic(file_path, chunk_bytes)
 
 static func load_chunk(world_name: String, coord: Vector2i) -> ChunkData:
 	var file_path: String = "%s/chunks/%d_%d.bin" % [
@@ -78,6 +70,11 @@ static func load_chunk(world_name: String, coord: Vector2i) -> ChunkData:
 		return null
 	var file: FileAccess = FileAccess.open(file_path, FileAccess.READ)
 	if file == null:
+		push_warning("No se pudo abrir el chunk guardado %s; se regenerará" % file_path)
+		return null
+	if file.get_length() < 9:
+		file.close()
+		_warn_invalid_chunk(file_path, "cabecera truncada")
 		return null
 	var magic: PackedByteArray = file.get_buffer(4)
 	var version: int = file.get_8()
@@ -85,12 +82,17 @@ static func load_chunk(world_name: String, coord: Vector2i) -> ChunkData:
 	var expected_size: int = Const.CHUNK_SIZE * Const.CHUNK_HEIGHT * Const.CHUNK_SIZE
 	if magic.get_string_from_ascii() != "BWCH" or version != 1 or original_size != expected_size:
 		file.close()
+		_warn_invalid_chunk(file_path, "magia, versión o tamaño inválido")
 		return null
 	var compressed_size: int = int(file.get_length() - file.get_position())
 	var compressed: PackedByteArray = file.get_buffer(compressed_size)
 	file.close()
+	if compressed.is_empty():
+		_warn_invalid_chunk(file_path, "datos comprimidos vacíos")
+		return null
 	var blocks: PackedByteArray = compressed.decompress(expected_size, FileAccess.COMPRESSION_ZSTD)
 	if blocks.size() != expected_size:
+		_warn_invalid_chunk(file_path, "descompresión incompleta")
 		return null
 	var data: ChunkData = ChunkData.new(coord)
 	data.blocks = blocks
@@ -100,3 +102,25 @@ static func load_chunk(world_name: String, coord: Vector2i) -> ChunkData:
 
 static func _save_directory(world_name: String) -> String:
 	return "user://saves/%s" % _safe_save_name(world_name)
+
+static func _warn_invalid_chunk(file_path: String, reason: String) -> void:
+	push_warning("Chunk guardado ignorado (%s): %s" % [reason, file_path])
+
+static func _write_atomic(file_path: String, contents: PackedByteArray) -> Error:
+	var temporary_path: String = "%s.tmp" % file_path
+	var file: FileAccess = FileAccess.open(temporary_path, FileAccess.WRITE)
+	if file == null:
+		return FileAccess.get_open_error()
+	file.store_buffer(contents)
+	file.flush()
+	var write_error: Error = file.get_error()
+	file.close()
+	if write_error != OK:
+		return write_error
+	var rename_error: Error = DirAccess.rename_absolute(
+		ProjectSettings.globalize_path(temporary_path),
+		ProjectSettings.globalize_path(file_path)
+	)
+	if rename_error != OK:
+		return rename_error
+	return OK
