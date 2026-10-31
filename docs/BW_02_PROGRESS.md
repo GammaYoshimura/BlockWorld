@@ -47,22 +47,17 @@ Fecha última actualización: 2026-10-31
 - [x] M4.08 — Ruido FastNoiseLite 3D a frecuencia 0.05 y semilla `world_seed + 1` talla aire en `5 <= y < h-4`; el barrido 3×3 encontró cuevas y verificó que bedrock/superficie permanecen intactos.
 - [x] M4.09 — Carga dinámica síncrona centrada en la cámara: radio `render_distance+1` para datos y `render_distance` para meshes, colas ordenadas por distancia y máximo 1 chunk de datos + 1 mesh por frame. Pruebas con distancia 2: 29 datos, 13 mallas, centro primero, sin duplicados.
 - [x] M4.10 — Descarga más allá de `render_distance+UNLOAD_MARGIN`; los datos modificados pasan a `modified_chunks` y se restauran al volver. Pruebas recorrieron ~300 bloques: datos/nodos acotados y sincronizados.
-- [ ] M4.06 — Mallado del agua.
-- [ ] M4.07 — Árboles deterministas.
-- [ ] M4.08 — Cuevas.
-- [ ] M4.09 — Carga dinámica alrededor del jugador.
-- [ ] M4.10 — Descarga con histéresis.
-- [ ] M4.11 — Semilla.
+- [x] M4.11 — `GameSettings.world_seed` se resuelve una vez: 0 genera un valor aleatorio persistente en sesión; `World` lo entrega a `WorldGenerator`. Pruebas PASS en tres coordenadas (misma semilla = mismos bloques; otra semilla = mundo distinto).
 
 ## Desviaciones del contrato (si las hay, aprobadas por el humano)
 - M1.04: el criterio menciona 25 acciones, pero la lista de la sección 3.7 enumera 24; se implementaron las 24 enumeradas, sin inventar una acción.
 
 ## Archivos existentes (ruta · propósito · último milestone que lo tocó)
-- `res://project.godot` · configuración, escena principal y autoload `InputSetup` · M1.04
+- `res://project.godot` · configuración, escena principal y autoloads `GameSettings`/`InputSetup` · M4.11
 - `res://scenes/main.tscn` · escena raíz `Main` (Node3D) con script `main.gd` · M1.02
 - `res://scripts/main.gd` · crea luz direccional, entorno, cámara libre como objetivo de streaming y etiqueta de depuración · M4.09
 - `res://scripts/util/fly_camera.gd` · cámara libre temporal sobre `Camera3D` · M1.08
-- `res://scripts/autoload/game_settings.gd` · base de autoload (`extends Node`) · M1.02
+- `res://scripts/autoload/game_settings.gd` · semilla de mundo persistente para la sesión · M4.11
 - `res://scripts/autoload/input_setup.gd` · registro de acciones de entrada y comprobación temporal · M1.04
 - `res://scripts/util/const.gd` · constantes del contrato · M1.03
 - `res://scripts/util/blocks.gd` · ids, propiedades y consultas de bloques con tablas de acceso rápido por id · M3.12
@@ -72,9 +67,9 @@ Fecha última actualización: 2026-10-31
 - `res://scripts/world/chunk_data.gd` · array de bloques, índices, acceso, protección y relleno plano temporal · M2.04
 - `res://scripts/world/mesh_builder.gd` · clase `MeshBuilder` con geometría, UV, colores e índices para caras; buffers predefinidos para evitar arrays temporales por cara · M3.12
 - `res://scripts/world/chunk_mesher.gd` · clase `ChunkMesher` optimizada para acceso directo a bytes y caras expuestas · M3.12
-- `res://scripts/world/world_generator.gd` · `WorldGenerator(world_seed)`, mapa de alturas, capas, agua, árboles y cuevas deterministas · M4.08
+- `res://scripts/world/world_generator.gd` · `WorldGenerator(world_seed)`, mapa de alturas, capas, agua, árboles y cuevas deterministas · M4.11
 - `res://scripts/world/chunk.gd` · nodo `Chunk` con `SolidMesh`, `WaterMesh`, `apply_mesh`, AABB y materiales compartidos · M4.06
-- `res://scripts/world/world.gd` · carga dinámica priorizada, mallas condicionadas por vecinos y descarga con histéresis · M4.10
+- `res://scripts/world/world.gd` · carga dinámica priorizada, mallas condicionadas por vecinos, descarga con histéresis y semilla recibida de `GameSettings` · M4.11
 - `res://scripts/world/voxel_raycast.gd` · clase `VoxelRaycast` · M1.02
 - `res://scripts/world/save_manager.gd` · clase `SaveManager` · M1.02
 - `res://scripts/player/player.gd` · clase `Player` · M1.02
@@ -86,7 +81,7 @@ Fecha última actualización: 2026-10-31
 - `res://scripts/ui/pause_menu.gd` · clase `PauseMenu` · M1.02
 - `res://scripts/ui/main_menu.gd` · clase `MainMenu` · M1.02
 - `res://tests/test_runner.tscn` · escena `Node` del runner · M1.02
-- `res://tests/test_runner.gd` · runner con casos de M1.06, M2.01 a M2.05, M3.02, M3.04, M3.05, M3.07 a M3.11 y M4.01 a M4.10 · M4.10
+- `res://tests/test_runner.gd` · runner con casos de M1.06, M2.01 a M2.05, M3.02, M3.04, M3.05, M3.07 a M3.11 y M4.01 a M4.11 · M4.11
 - `res://.gitignore` · exclusión de `.godot/` · proyecto base
 - `res://icon.svg` · icono del proyecto · proyecto base
 

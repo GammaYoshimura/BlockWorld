@@ -68,6 +68,8 @@ func _ready() -> void:
 	_test_dynamic_chunk_streaming()
 	_current_milestone = "M4.10"
 	await _test_dynamic_chunk_unloading()
+	_current_milestone = "M4.11"
+	_test_world_seed()
 
 func _test_world_to_chunk_and_local() -> void:
 	for test_case: Vector3i in COORD_CASES:
@@ -662,9 +664,34 @@ func _test_dynamic_chunk_unloading() -> void:
 	_check(world.get_child_count() == world.chunk_nodes.size(), "número de nodos Chunk se mantiene sincronizado")
 	world.free()
 
+func _test_world_seed() -> void:
+	var previous_seed: int = GameSettings.world_seed
+	GameSettings.world_seed = 0
+	var resolved_seed: int = GameSettings.resolve_world_seed()
+	_check(resolved_seed != 0, "semilla cero se sustituye por una semilla aleatoria")
+	_check(GameSettings.resolve_world_seed() == resolved_seed, "semilla aleatoria se conserva durante la sesión")
+	var default_world: World = World.new()
+	_check(default_world.world_seed == resolved_seed, "World recibe la semilla de GameSettings")
+	default_world.free()
+
+	var seed_a: int = 7654321
+	var generator_a: WorldGenerator = WorldGenerator.new(seed_a)
+	var generator_b: WorldGenerator = WorldGenerator.new(seed_a)
+	for coord: Vector2i in [Vector2i(0, 0), Vector2i(3, -2), Vector2i(-7, 5)]:
+		_check(
+			generator_a.generate(coord.x, coord.y).blocks == generator_b.generate(coord.x, coord.y).blocks,
+			"misma semilla repite el mundo en " + str(coord)
+		)
+	var generator_other_seed: WorldGenerator = WorldGenerator.new(seed_a + 1)
+	_check(
+		generator_a.generate(0, 0).blocks != generator_other_seed.generate(0, 0).blocks,
+		"semillas distintas producen bloques distintos"
+	)
+	GameSettings.world_seed = previous_seed
+
 @warning_ignore("shadowed_variable_base_class")
 func _check(cond: bool, name: String) -> void:
 	if cond:
-		print("PASS ", _current_milestone, " ", name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11 # DEBUG-M4.01 # DEBUG-M4.02 # DEBUG-M4.03 # DEBUG-M4.04 # DEBUG-M4.05 # DEBUG-M4.06 # DEBUG-M4.07 # DEBUG-M4.08 # DEBUG-M4.09 # DEBUG-M4.10
+		print("PASS ", _current_milestone, " ", name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11 # DEBUG-M4.01 # DEBUG-M4.02 # DEBUG-M4.03 # DEBUG-M4.04 # DEBUG-M4.05 # DEBUG-M4.06 # DEBUG-M4.07 # DEBUG-M4.08 # DEBUG-M4.09 # DEBUG-M4.10 # DEBUG-M4.11
 	else:
-		push_error("FAIL " + _current_milestone + " " + name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11 # DEBUG-M4.01 # DEBUG-M4.02 # DEBUG-M4.03 # DEBUG-M4.04 # DEBUG-M4.05 # DEBUG-M4.06 # DEBUG-M4.07 # DEBUG-M4.08 # DEBUG-M4.09 # DEBUG-M4.10
+		push_error("FAIL " + _current_milestone + " " + name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11 # DEBUG-M4.01 # DEBUG-M4.02 # DEBUG-M4.03 # DEBUG-M4.04 # DEBUG-M4.05 # DEBUG-M4.06 # DEBUG-M4.07 # DEBUG-M4.08 # DEBUG-M4.09 # DEBUG-M4.10 # DEBUG-M4.11

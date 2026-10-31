@@ -17,6 +17,7 @@ run/main_scene="res://scenes/main.tscn"
 
 [autoload]
 
+GameSettings="*res://scripts/autoload/game_settings.gd"
 InputSetup="*res://scripts/autoload/input_setup.gd"
 
 [display]

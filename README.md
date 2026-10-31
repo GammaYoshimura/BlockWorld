@@ -16,9 +16,9 @@ La carpeta `.godot/` es caché local y está excluida de Git. Godot la recrea al
 
 ## Estado actual
 
-- Fases 1, 2 y 3 completadas hasta M3.12; M4.01–M4.10 también están completos.
-- El mundo de `main.tscn` carga terreno procedural alrededor de la cámara libre. Genera como máximo un chunk de datos y una malla por frame; descarga chunks a distancia y conserva los modificados en memoria. Incluye agua, árboles y cuevas.
-- Siguiente hito según el plan: **M4.11 — Semilla** en `docs/BW_05_FASE_4_terreno.md`.
+- Fases 1, 2, 3 y 4 completadas hasta M4.11.
+- El mundo de `main.tscn` carga terreno procedural alrededor de la cámara libre. Genera como máximo un chunk de datos y una malla por frame; descarga chunks a distancia y conserva los modificados en memoria. Incluye agua, árboles, cuevas y semilla de sesión.
+- Siguiente fase según el plan: **M5.01 — Escena del jugador por código** en `docs/BW_06_FASE_5_jugador.md`.
 - El usuario informa que la ventana del juego se ve gris. Aunque los tests de asignación de atlas/UV pasaron antes, **la visualización con textura no está confirmada para el usuario**. No afirmar que el terreno aparece texturizado hasta resolverlo y comprobarlo de verdad.
 - El runner acumulado pasó sus comprobaciones hasta M4.01 después de los cambios de rendimiento. Aparecen tres `push_error` deliberados de M2.03 al comprobar accesos inválidos; no hubo fallos de test. La escena principal también arranca sin errores en la salida del Godot MCP.
 
@@ -41,7 +41,7 @@ Los documentos de fases describen el diseño previsto; `BW_02_PROGRESS.md` y el 
 
 ## Continuación recomendada
 
-1. Retomar por M4.11 según `docs/BW_05_FASE_4_terreno.md`.
+1. Retomar por M5.01 según `docs/BW_06_FASE_5_jugador.md`.
 2. Mantener `docs/BW_02_PROGRESS.md` actualizado.
 3. Usar Godot MCP para ejecutar el juego o el runner en este equipo si las teclas F no están disponibles.
 4. No cerrar el problema visual de la pantalla gris hasta comprobar las texturas en la ventana real.

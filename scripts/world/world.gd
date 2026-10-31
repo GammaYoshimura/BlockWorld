@@ -14,13 +14,15 @@ var meshed_chunks: Dictionary = {}
 var modified_chunks: Array[ChunkData] = []
 var last_mesh_build_usec: int = 0
 var generator: WorldGenerator
+var world_seed: int
 var render_distance: int = Const.DEFAULT_RENDER_DISTANCE
 var stream_target: Node3D
 var _stream_center_chunk: Vector2i = Vector2i(2147483647, 2147483647)
 var _data_queue: Array[Vector2i] = []
 var _mesh_queue: Array[Vector2i] = []
 
-func _init(world_seed: int = 0) -> void:
+func _init(seed_override: int = 0) -> void:
+	world_seed = seed_override if seed_override != 0 else GameSettings.resolve_world_seed()
 	generator = WorldGenerator.new(world_seed)
 
 func _process(_delta: float) -> void:
