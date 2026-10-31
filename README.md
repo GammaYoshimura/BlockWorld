@@ -16,7 +16,7 @@ La carpeta `.godot/` es caché local y está excluida de Git. Godot la recrea al
 
 ## Estado actual
 
-- Fases 1–4 completas hasta M4.11; Fase 5 implementada hasta M5.05 y M5.08. M5.06 (salto) está ampliado para incluir auto-subida hasta un bloque.
+- Fases 1–4 completas hasta M4.11; Fase 5 implementada hasta M5.05, M5.06 y M5.08. Falta comprobar en juego el auto-paso de un bloque añadido a M5.06.
 - El mundo de `main.tscn` carga terreno procedural alrededor de la cámara del jugador. Genera como máximo un chunk de datos y una malla por frame; descarga chunks a distancia y conserva los modificados en memoria. Incluye agua, árboles, cuevas y semilla de sesión.
 - Siguiente hito según el plan: **M5.06 — Salto y auto-subida de un bloque** en `docs/BW_06_FASE_5_jugador.md`.
 - Las hojas usan transparencia recortada con un patrón pseudoaleatorio mezclado para evitar artefactos diagonales repetitivos.

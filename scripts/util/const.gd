@@ -27,6 +27,7 @@ const FLY_SPEED: float = 12.0
 const GRAVITY: float = 32.0
 const JUMP_VELOCITY: float = 9.0
 const TERMINAL_VELOCITY: float = 60.0
+const AUTO_STEP_HEIGHT: float = 1.0
 const MOUSE_SENSITIVITY: float = 0.002
 const PITCH_LIMIT_DEG: float = 89.0
 
