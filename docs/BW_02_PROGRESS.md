@@ -59,7 +59,7 @@ Fecha última actualización: 2026-10-31
 - [x] M5.07 — Ctrl + avanzar acelera a 5.6; Shift reduce a 1.3; caminar mantiene 4.3. Usuario confirmó ambas velocidades.
 - [x] M5.08 — Mantiene la física desactivada hasta tener colisiones en radio 2; busca un punto de tierra cercano con el espacio vertical libre antes de activar al jugador, evitando aparecer dentro de troncos/hojas. Muestra «Generando mundo…» durante la carga.
 - [x] M5.09 — Vuelo con F: sin gravedad, velocidad `FLY_SPEED`, Espacio sube y Shift baja; conserva `move_and_slide()` y colisión. Usuario confirmó que funciona. Restricción a modo creativo/objetos especiales queda como decisión futura.
-- [ ] M5.10 — Al caer bajo Y=-20 reaparece en el spawn y se anula la velocidad; implementación lista, falta comprobar recuperación.
+- [ ] M5.10 — Al caer bajo Y=-20, desactiva física y espera la carga de colisiones antes de buscar/aplicar un spawn despejado; falta comprobar recuperación en juego.
 - [x] M5.11 — Cámara con `fov=70`, `near=0.05` y `far=(render_distance+2)*CHUNK_SIZE`.
 
 ## Fase 6 — Interacción con bloques
@@ -67,7 +67,7 @@ Fecha última actualización: 2026-10-31
 - [x] M6.02 — Resaltado de bloque apuntado con cubo de aristas ±0.002 y alcance `PLAYER_REACH`; usuario confirmó que funciona.
 - [x] M6.03 — Clic izquierdo rompe el bloque apuntado salvo bedrock; usuario confirmó que rompe y actualiza el contorno.
 - [x] M6.04 — Chunks editados y vecinos en bordes se remallan preparando mallas por separado y aplicándolas atómicamente; usuario confirmó que funciona.
-- [x] M6.05 — Clic derecho coloca el bloque seleccionado en `prev` si y está en rango, la celda es AIR/WATER y su AABB no intersecta al jugador; usuario confirmó colocación funcional.
+- [x] M6.05 — Clic derecho coloca el bloque seleccionado en `prev` si y está en rango, la celda es AIR/WATER y su AABB no se solapa con el jugador (el contacto exacto entre caras se permite para apilar bloques); usuario confirmó colocación funcional.
 - [x] M6.06 — Hotbar lógica de 9 slots según contrato; rueda y teclas 1–9 cambian selección, overlay muestra slot/id; usuario confirmó que funciona.
 - [ ] M6.07 — Clic central selecciona el bloque si ya está en la hotbar; si no, reemplaza el slot actual.
 - [ ] M6.08 — Mantener clic repite romper/colocar cada `ACTION_REPEAT_SECONDS` (0.25 s).

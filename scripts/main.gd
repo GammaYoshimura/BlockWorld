@@ -69,6 +69,8 @@ func _build_streamed_world() -> void:
 	add_child(_world)
 
 func _process(_delta: float) -> void:
+	if not _spawn_pending and _player.global_position.y < -20.0:
+		_begin_spawn_loading()
 	if _spawn_pending and _world.are_collisions_ready(Vector2i.ZERO, 2):
 		var safe_spawn: Variant = _find_safe_spawn()
 		if safe_spawn is Vector3:
@@ -84,6 +86,18 @@ func _process(_delta: float) -> void:
 		_debug_label.visible = not _debug_label.visible
 	if _debug_label.visible:
 		_update_debug_label()
+
+func _begin_spawn_loading() -> void:
+	_spawn_pending = true
+	_player.set_physics_process(false)
+	_player.velocity = Vector3.ZERO
+	_player.is_flying = false
+	_player.global_position = Vector3(
+		0.5,
+		float(_world.generator.height_at(0, 0) + 2),
+		0.5
+	)
+	_loading_label.visible = true
 
 func _find_safe_spawn() -> Variant:
 	var candidates: Array[Vector2i] = []

@@ -13,9 +13,6 @@ func _physics_process(delta: float) -> void:
 		is_flying = not is_flying
 		if is_flying:
 			velocity.y = 0.0
-	if global_position.y < -20.0:
-		respawn()
-		return
 	if is_flying:
 		_process_flight(delta)
 		return
@@ -123,11 +120,6 @@ func _process_flight(delta: float) -> void:
 	motion.y = vertical_direction * Const.FLY_SPEED
 	velocity = velocity.move_toward(motion, 60.0 * delta)
 	move_and_slide()
-
-func respawn() -> void:
-	global_position = spawn_position
-	velocity = Vector3.ZERO
-	is_flying = false
 
 func _ready() -> void:
 	collision_layer = 2
