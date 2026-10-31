@@ -31,6 +31,7 @@ var _generation_tasks: Dictionary = {}
 var _generation_results: RefCounted = ThreadResultQueueScript.new()
 var _mesh_tasks: Dictionary = {}
 var _mesh_results: RefCounted = ThreadResultQueueScript.new()
+var _ready_mesh_applications: Array[Dictionary] = []
 
 func _init(seed_override: int = 0) -> void:
 	world_seed = seed_override if seed_override != 0 else GameSettings.resolve_world_seed()
@@ -105,6 +106,7 @@ func update_streaming(world_position: Vector3) -> void:
 		_refresh_streaming_queues(center_chunk)
 	_process_generation_results()
 	_process_mesh_results()
+	_process_one_mesh_application()
 	_process_one_data_chunk()
 	_process_one_mesh_chunk()
 	_update_collision_range(center_chunk)
@@ -118,7 +120,7 @@ func get_pending_data_count() -> int:
 	return _data_queue.size() + _generation_tasks.size()
 
 func get_pending_mesh_count() -> int:
-	return _mesh_queue.size() + _mesh_tasks.size()
+	return _mesh_queue.size() + _mesh_tasks.size() + _ready_mesh_applications.size()
 
 func get_pending_dirty_count() -> int:
 	return _dirty_chunks.size()
@@ -317,7 +319,20 @@ func _process_mesh_results() -> void:
 		if result["purpose"] == "dirty":
 			_pending_dirty_meshes[coord] = result
 		else:
-			_apply_mesh_result(coord, result)
+			_ready_mesh_applications.append(result)
+
+func _process_one_mesh_application() -> void:
+	while not _ready_mesh_applications.is_empty():
+		var result: Dictionary = _ready_mesh_applications.pop_front()
+		var coord: Vector2i = result["coord"] as Vector2i
+		if not _is_in_mesh_range(coord):
+			continue
+		if not _mesh_versions_match(result["versions"] as Dictionary):
+			if not meshed_chunks.has(coord) and not _mesh_queue.has(coord):
+				_mesh_queue.append(coord)
+			continue
+		_apply_mesh_result(coord, result)
+		return
 
 func _apply_mesh_result(coord: Vector2i, result: Dictionary) -> void:
 	var chunk_node: Chunk = chunk_nodes.get(coord) as Chunk
@@ -343,6 +358,9 @@ func _unload_distant_chunks(center_chunk: Vector2i) -> void:
 			chunk_node.queue_free()
 		_dirty_chunks.erase(coord)
 		_pending_dirty_meshes.erase(coord)
+		for index: int in range(_ready_mesh_applications.size() - 1, -1, -1):
+			if (_ready_mesh_applications[index]["coord"] as Vector2i) == coord:
+				_ready_mesh_applications.remove_at(index)
 		chunk_nodes.erase(coord)
 		chunks.erase(coord)
 		meshed_chunks.erase(coord)

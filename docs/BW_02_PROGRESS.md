@@ -85,7 +85,7 @@ Fecha última actualización: 2026-10-31
 - [ ] M8.01 — `ThreadResultQueue` implementada con `Mutex`, `push_result`, `pop_all` y `size`; pendiente verificar el criterio de 100 resultados desde `WorkerThreadPool`.
 - [ ] M8.02 — Streaming genera datos con hasta 4 tareas `WorkerThreadPool`. Cada worker crea sus propios `FastNoiseLite` y devuelve `ChunkData` por la cola segura; falta validar equivalencia y estabilidad al cruzar límites.
 - [ ] M8.03 — Mallado programado en workers a partir de copias de `ChunkData` y vecinos. Se conserva `mesh_version` de todas las fuentes; el hilo principal descarta resultados obsoletos y aplica los builders válidos. Falta validar cambios rápidos durante la carga.
-- [ ] M8.04 — Presupuesto de aplicación de resultados de malla (1 mesh/frame o hasta 3 ms) pendiente.
+- [ ] M8.04 — Aplica como máximo una malla de streaming por frame; las mallas de edición se aplican como lote para mantener remallado atómico. Falta medir el costo del lote frente al presupuesto de 3 ms.
 - [ ] M8.05 — Colisión trimesh solo en el radio de colisión y se conserva hasta `COLLISION_RADIUS + 1` antes de destruirse (histerésis); pendiente observar recuentos al desplazarse.
 - [ ] M8.06 — Las colas priorizan por distancia y descartan resultados al acabar fuera del radio actual; al descargar un chunk se limpian remallados diferidos. Falta validar el recorrido continuo de 10 s.
 - [ ] M8.07 — `_exit_tree` espera las tareas activas de generación y mallado antes de liberar el mundo; falta confirmar cierre sin errores.
@@ -114,7 +114,7 @@ Fecha última actualización: 2026-10-31
 - `res://scripts/world/chunk_generation_task.gd` · worker estático para generar `ChunkData` sin tocar nodos o diccionarios de escena · M8.02
 - `res://scripts/world/chunk_mesh_task.gd` · worker estático para mallar snapshots de chunks · M8.03
 - `res://scripts/world/chunk.gd` · nodo `Chunk` con mallas y colisión trimesh opcional e histéresis de activación · M8.05
-- `res://scripts/world/world.gd` · streaming, generación/mallado en hilos, descarte fuera de rango, cierre de tareas, colisiones y spawn · M8.07
+- `res://scripts/world/world.gd` · streaming, generación/mallado en hilos, presupuesto de aplicación, descarte fuera de rango, cierre de tareas, colisiones y spawn · M8.07
 - `res://scripts/world/voxel_raycast.gd` · clase `VoxelRaycast` · M1.02
 - `res://scripts/world/save_manager.gd` · clase `SaveManager` · M1.02
 - `res://scripts/player/player.gd` · jugador con movimiento, salto, vuelo, respawn y cámara · M5.10
