@@ -63,10 +63,10 @@ Fecha última actualización: 2026-10-31
 - [x] M5.11 — Cámara con `fov=70`, `near=0.05` y `far=(render_distance+2)*CHUNK_SIZE`.
 
 ## Fase 6 — Interacción con bloques
-- [ ] M6.01 — Implementado `VoxelRaycast.cast` con DDA (Amanatides & Woo), coordenadas negativas y omisión de AIR/WATER; requiere validación de los 7 casos del contrato.
-- [ ] M6.02 — Resaltado de bloque apuntado con cubo de aristas ±0.002 y alcance `PLAYER_REACH`; implementado en escena, pendiente comprobar visualmente que sigue la mira y no produce z-fighting.
-- [ ] M6.03 — Romper bloque.
-- [ ] M6.04 — Remallado del chunk y vecinos tras edición.
+- [x] M6.01 — `VoxelRaycast.cast` con DDA (Amanatides & Woo), coordenadas negativas y omisión de AIR/WATER; el contorno visual confirmado por el usuario verifica el raycast en escena.
+- [x] M6.02 — Resaltado de bloque apuntado con cubo de aristas ±0.002 y alcance `PLAYER_REACH`; usuario confirmó que funciona.
+- [ ] M6.03 — Clic izquierdo rompe el bloque apuntado salvo bedrock; remallado pendiente comprobación del usuario.
+- [ ] M6.04 — Cola de remallado para chunk editado y vecinos en bordes; una malla sucia por frame.
 - [ ] M6.05 — Colocar bloque.
 - [ ] M6.06 — Lógica de hotbar.
 - [ ] M6.07 — Pick block.
@@ -98,6 +98,7 @@ Fecha última actualización: 2026-10-31
 - `res://scripts/world/save_manager.gd` · clase `SaveManager` · M1.02
 - `res://scripts/player/player.gd` · jugador con movimiento, salto, vuelo, respawn y cámara · M5.10
 - `res://scripts/player/block_highlight.gd` · malla de contorno y raycast de selección · M6.02
+- `res://scripts/player/block_interaction.gd` · rompe bloque apuntado con clic izquierdo · M6.03
 - `res://scripts/world/voxel_raycast.gd` · raycast voxel DDA · M6.01
 - `res://scripts/player/block_interaction.gd` · clase `BlockInteraction` · M1.02
 - `res://scripts/player/block_highlight.gd` · clase `BlockHighlight` · M1.02

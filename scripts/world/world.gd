@@ -12,6 +12,7 @@ var chunks: Dictionary = {}
 var chunk_nodes: Dictionary = {}
 var meshed_chunks: Dictionary = {}
 var modified_chunks: Array[ChunkData] = []
+var _dirty_chunks: Dictionary = {}
 var last_mesh_build_usec: int = 0
 var generator: WorldGenerator
 var world_seed: int
@@ -73,6 +74,7 @@ func update_streaming(world_position: Vector3) -> void:
 	_process_one_data_chunk()
 	_process_one_mesh_chunk()
 	_update_collision_range(center_chunk)
+	_process_one_dirty_chunk()
 
 func set_render_distance(distance: int) -> void:
 	render_distance = clampi(distance, Const.MIN_RENDER_DISTANCE, Const.MAX_RENDER_DISTANCE)
@@ -192,13 +194,38 @@ func get_block(wx: int, wy: int, wz: int) -> int:
 	return chunk_data.get_block(local_pos.x, wy, local_pos.y)
 
 func set_block(wx: int, wy: int, wz: int, id: int) -> void:
+	if wy < 0 or wy >= Const.CHUNK_HEIGHT:
+		return
 	var chunk_coord: Vector2i = Coords.world_to_chunk(wx, wz)
 	var chunk_data: ChunkData = get_chunk_data(chunk_coord)
 	if chunk_data == null:
 		return
 
 	var local_pos: Vector2i = Coords.world_to_local(wx, wz)
+	var previous_version: int = chunk_data.mesh_version
 	chunk_data.set_block(local_pos.x, wy, local_pos.y, id)
+	if chunk_data.mesh_version == previous_version:
+		return
+	_mark_chunk_dirty(chunk_coord)
+	if local_pos.x == 0:
+		_mark_chunk_dirty(chunk_coord + Vector2i(-1, 0))
+	elif local_pos.x == Const.CHUNK_SIZE - 1:
+		_mark_chunk_dirty(chunk_coord + Vector2i(1, 0))
+	if local_pos.y == 0:
+		_mark_chunk_dirty(chunk_coord + Vector2i(0, -1))
+	elif local_pos.y == Const.CHUNK_SIZE - 1:
+		_mark_chunk_dirty(chunk_coord + Vector2i(0, 1))
+
+func _mark_chunk_dirty(coord: Vector2i) -> void:
+	if chunks.has(coord) and chunk_nodes.has(coord):
+		_dirty_chunks[coord] = true
+
+func _process_one_dirty_chunk() -> void:
+	if _dirty_chunks.is_empty():
+		return
+	var coord: Vector2i = _dirty_chunks.keys()[0]
+	if remesh(coord):
+		_dirty_chunks.erase(coord)
 
 func get_chunk_data(c: Vector2i) -> ChunkData:
 	return chunks.get(c) as ChunkData

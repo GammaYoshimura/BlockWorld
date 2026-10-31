@@ -4,6 +4,7 @@ var _camera: Camera3D
 var _world: World
 var _player: Player
 var _block_highlight: BlockHighlight
+var _block_interaction: BlockInteraction
 var _debug_label: Label
 var _loading_label: Label
 var _mesh_build_ms: float = 0.0
@@ -42,6 +43,9 @@ func _ready() -> void:
 	_block_highlight.camera = _camera
 	_block_highlight.world = _world
 	add_child(_block_highlight)
+	_block_interaction = BlockInteraction.new()
+	_block_interaction.setup(_player, _camera, _world)
+	add_child(_block_interaction)
 
 	var debug_layer: CanvasLayer = CanvasLayer.new()
 	_debug_label = Label.new()
