@@ -65,8 +65,8 @@ Fecha última actualización: 2026-10-31
 ## Fase 6 — Interacción con bloques
 - [x] M6.01 — `VoxelRaycast.cast` con DDA (Amanatides & Woo), coordenadas negativas y omisión de AIR/WATER; el contorno visual confirmado por el usuario verifica el raycast en escena.
 - [x] M6.02 — Resaltado de bloque apuntado con cubo de aristas ±0.002 y alcance `PLAYER_REACH`; usuario confirmó que funciona.
-- [ ] M6.03 — Clic izquierdo rompe el bloque apuntado salvo bedrock; remallado pendiente comprobación del usuario.
-- [ ] M6.04 — Cola de remallado para chunk editado y vecinos en bordes; una malla sucia por frame.
+- [x] M6.03 — Clic izquierdo rompe el bloque apuntado salvo bedrock; usuario confirmó que rompe y actualiza el contorno.
+- [ ] M6.04 — Chunk editado y vecinos en bordes se remallan con mallas preparadas en frames separados y aplicación atómica en un único frame, evitando mostrar estados intermedios. Falta confirmar si desapareció el parpadeo.
 - [ ] M6.05 — Colocar bloque.
 - [ ] M6.06 — Lógica de hotbar.
 - [ ] M6.07 — Pick block.

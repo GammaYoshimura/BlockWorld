@@ -13,6 +13,7 @@ var chunk_nodes: Dictionary = {}
 var meshed_chunks: Dictionary = {}
 var modified_chunks: Array[ChunkData] = []
 var _dirty_chunks: Dictionary = {}
+var _pending_dirty_meshes: Dictionary = {}
 var last_mesh_build_usec: int = 0
 var generator: WorldGenerator
 var world_seed: int
@@ -47,24 +48,31 @@ func ensure_chunk(cx: int, cz: int) -> ChunkData:
 
 func remesh(coord: Vector2i) -> bool:
 	last_mesh_build_usec = 0
-	if not chunks.has(coord) or not chunk_nodes.has(coord):
+	var build_info: Dictionary = _build_mesh_info(coord)
+	if build_info.is_empty():
 		return false
+	var chunk_node: Chunk = chunk_nodes[coord] as Chunk
+	chunk_node.apply_mesh(build_info["mesh"])
+	last_mesh_build_usec = int(build_info["usec"])
+	meshed_chunks[coord] = true
+	return true
 
+func _build_mesh_info(coord: Vector2i) -> Dictionary:
+	if not chunks.has(coord) or not chunk_nodes.has(coord):
+		return {}
 	var neighbors: Dictionary = {}
 	for offset: Vector2i in CHUNK_NEIGHBOR_OFFSETS:
 		var neighbor_coord: Vector2i = coord + offset
 		if not chunks.has(neighbor_coord):
-			return false
+			return {}
 		neighbors[offset] = chunks[neighbor_coord]
-
-	var chunk_data: ChunkData = chunks[coord] as ChunkData
-	var chunk_node: Chunk = chunk_nodes[coord] as Chunk
 	var build_start_usec: int = Time.get_ticks_usec()
-	var mesh_result: Dictionary = ChunkMesher.build(chunk_data, neighbors)
-	last_mesh_build_usec = Time.get_ticks_usec() - build_start_usec
-	chunk_node.apply_mesh(mesh_result)
-	meshed_chunks[coord] = true
-	return true
+	var mesh_result: Dictionary = ChunkMesher.build(chunks[coord] as ChunkData, neighbors)
+	return {
+		"mesh": mesh_result,
+		"usec": Time.get_ticks_usec() - build_start_usec,
+		"version": (chunks[coord] as ChunkData).mesh_version
+	}
 
 func update_streaming(world_position: Vector3) -> void:
 	var center_chunk: Vector2i = Coords.world_to_chunk(floori(world_position.x), floori(world_position.z))
@@ -223,9 +231,40 @@ func _mark_chunk_dirty(coord: Vector2i) -> void:
 func _process_one_dirty_chunk() -> void:
 	if _dirty_chunks.is_empty():
 		return
-	var coord: Vector2i = _dirty_chunks.keys()[0]
-	if remesh(coord):
-		_dirty_chunks.erase(coord)
+	for coord_variant: Variant in _dirty_chunks.keys():
+		var coord: Vector2i = coord_variant as Vector2i
+		var chunk_data: ChunkData = chunks.get(coord) as ChunkData
+		if chunk_data == null:
+			_dirty_chunks.erase(coord)
+			_pending_dirty_meshes.erase(coord)
+			continue
+		var pending: Dictionary = _pending_dirty_meshes.get(coord, {}) as Dictionary
+		if not pending.is_empty() and int(pending["version"]) == chunk_data.mesh_version:
+			continue
+		var build_info: Dictionary = _build_mesh_info(coord)
+		if build_info.is_empty():
+			continue
+		last_mesh_build_usec = int(build_info["usec"])
+		_pending_dirty_meshes[coord] = build_info
+		break
+
+	for coord_variant: Variant in _dirty_chunks.keys():
+		var coord: Vector2i = coord_variant as Vector2i
+		var chunk_data: ChunkData = chunks.get(coord) as ChunkData
+		var pending: Dictionary = _pending_dirty_meshes.get(coord, {}) as Dictionary
+		if chunk_data == null or pending.is_empty() or int(pending["version"]) != chunk_data.mesh_version:
+			return
+
+	for coord_variant: Variant in _dirty_chunks.keys():
+		var coord: Vector2i = coord_variant as Vector2i
+		var chunk_node: Chunk = chunk_nodes.get(coord) as Chunk
+		if chunk_node == null:
+			continue
+		var pending: Dictionary = _pending_dirty_meshes[coord] as Dictionary
+		chunk_node.apply_mesh(pending["mesh"])
+		meshed_chunks[coord] = true
+	_dirty_chunks.clear()
+	_pending_dirty_meshes.clear()
 
 func get_chunk_data(c: Vector2i) -> ChunkData:
 	return chunks.get(c) as ChunkData
