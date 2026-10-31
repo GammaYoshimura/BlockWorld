@@ -2,8 +2,11 @@ extends Node3D
 
 var _camera: Camera3D
 var _world: World
+var _player: Player
 var _debug_label: Label
+var _loading_label: Label
 var _mesh_build_ms: float = 0.0
+var _spawn_pending: bool = true
 
 func _ready() -> void:
 	var light: DirectionalLight3D = DirectionalLight3D.new()
@@ -18,24 +21,31 @@ func _ready() -> void:
 	world_environment.environment = environment
 	add_child(world_environment)
 
-	var camera_position: Vector3 = Vector3(8.0, 34.0, 52.0)
-	var world_center: Vector3 = Vector3(8.0, 20.0, 8.0)
-	var player: Player = Player.new()
-	player.name = "Player"
-	player.position = camera_position - Vector3.UP * Const.PLAYER_EYE_HEIGHT
-	add_child(player)
-	_camera = player.get_camera()
-	var look_direction: Vector3 = (world_center - camera_position).normalized()
-	player.rotation.y = atan2(look_direction.x, -look_direction.z)
-	player.head.rotation.x = asin(look_direction.y)
-
 	_build_streamed_world()
+	_player = Player.new()
+	_player.name = "Player"
+	_player.position = Vector3(
+		0.5,
+		float(_world.generator.height_at(0, 0) + 2),
+		0.5
+	)
+	add_child(_player)
+	_player.set_physics_process(false)
+	_player.head.rotation.x = -0.12
+	_camera = _player.get_camera()
+	_world.stream_target = _camera
 
 	var debug_layer: CanvasLayer = CanvasLayer.new()
 	_debug_label = Label.new()
 	_debug_label.position = Vector2(10.0, 10.0)
 	_debug_label.add_theme_color_override("font_color", Color.WHITE)
 	debug_layer.add_child(_debug_label)
+	_loading_label = Label.new()
+	_loading_label.name = "LoadingLabel"
+	_loading_label.position = Vector2(10.0, 36.0)
+	_loading_label.add_theme_color_override("font_color", Color.WHITE)
+	_loading_label.text = "Generando mundo…"
+	debug_layer.add_child(_loading_label)
 	add_child(debug_layer)
 	_update_debug_label()
 
@@ -47,6 +57,10 @@ func _build_streamed_world() -> void:
 	add_child(_world)
 
 func _process(_delta: float) -> void:
+	if _spawn_pending and _world.are_collisions_ready(Vector2i.ZERO, 2):
+		_spawn_pending = false
+		_player.set_physics_process(true)
+		_loading_label.visible = false
 	if _world != null and _world.last_mesh_build_usec > 0:
 		_mesh_build_ms = float(_world.last_mesh_build_usec) / 1000.0
 	if Input.is_action_just_pressed(&"toggle_debug"):
@@ -56,11 +70,14 @@ func _process(_delta: float) -> void:
 
 func _update_debug_label() -> void:
 	var camera_position: Vector3 = _camera.global_position
-	_debug_label.text = "FPS: %d\nMesh: %s ms\nChunks: %d data / %d mesh\nPos: %s, %s, %s" % [
+	_debug_label.text = "FPS: %d\nMesh: %s ms\nChunks: %d data / %d mesh\nCollision chunks: %d\nFloor: %s (vy %s)\nPos: %s, %s, %s" % [
 		Engine.get_frames_per_second(),
 		String.num(_mesh_build_ms, 2),
 		_world.chunks.size(),
 		_world.get_meshed_chunk_count(),
+		_world.get_collision_chunk_count(),
+		str(_player.is_on_floor()),
+		String.num(_player.velocity.y, 2),
 		String.num(camera_position.x, 2),
 		String.num(camera_position.y, 2),
 		String.num(camera_position.z, 2)

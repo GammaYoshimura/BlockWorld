@@ -17,6 +17,14 @@ func _physics_process(delta: float) -> void:
 	var acceleration: float = 60.0 if is_on_floor() else 20.0
 	velocity.x = move_toward(velocity.x, target_velocity.x, acceleration * delta)
 	velocity.z = move_toward(velocity.z, target_velocity.z, acceleration * delta)
+	if is_on_floor():
+		if velocity.y < 0.0:
+			velocity.y = 0.0
+	else:
+		velocity.y = maxf(
+			velocity.y - Const.GRAVITY * delta,
+			-Const.TERMINAL_VELOCITY
+		)
 	move_and_slide()
 
 func _ready() -> void:

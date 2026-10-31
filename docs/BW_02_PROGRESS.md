@@ -50,14 +50,14 @@ Fecha última actualización: 2026-10-31
 - [x] M4.11 — `GameSettings.world_seed` se resuelve una vez: 0 genera un valor aleatorio persistente en sesión; `World` lo entrega a `WorldGenerator`. Pruebas PASS en tres coordenadas (misma semilla = mismos bloques; otra semilla = mundo distinto).
 
 ## Fase 5 — Jugador
-- [x] M5.01 — `Player` construye cápsula de colisión (`radius=0.3`, `height=1.8`), pivote `Head` a altura de ojos y `Camera3D`; la escena principal usa al jugador como objetivo del streaming y ya no crea la cámara libre. Godot ejecuta la escena sin errores; pendiente confirmación visual del usuario.
+- [x] M5.01 — `Player` construye cápsula de colisión (`radius=0.3`, `height=1.8`), pivote `Head` a altura de ojos y `Camera3D`; la escena principal usa al jugador como objetivo del streaming y ya no crea la cámara libre. Usuario confirma que ve el mundo desde esta cámara.
 - [x] M5.02 — Mirada con ratón; ratón capturado al iniciar, giro horizontal en `Player`, vertical en `Head` limitado a ±89°; Esc libera y clic recaptura. Usuario confirmó que funciona.
-- [x] M5.03 — Movimiento horizontal con `Input.get_vector`, velocidad objetivo `WALK_SPEED` (4.3) normalizada también en diagonal, aceleración suelo/aire 60/20 y frenado al soltar. Sin gravedad todavía (M5.04); pendiente de comprobación del usuario.
-- [ ] M5.04 — Gravedad.
-- [ ] M5.05 — Colisión con el mundo.
+- [x] M5.03 — Movimiento horizontal con `Input.get_vector`, velocidad objetivo `WALK_SPEED` (4.3) normalizada también en diagonal, aceleración suelo/aire 60/20 y frenado al soltar.
+- [x] M5.04 — Gravedad `32 m/s²` limitada a `-60`, velocidad vertical descendente anulada al tocar suelo.
+- [x] M5.05 — Cada chunk crea `StaticBody3D` con trimesh de la malla sólida (agua excluida), colisión por ambos lados y colisión activa dentro de `COLLISION_RADIUS`; el usuario confirmó que ya no cae.
 - [ ] M5.06 — Salto.
 - [ ] M5.07 — Sprint y agacharse.
-- [ ] M5.08 — Aparición segura.
+- [x] M5.08 — Aparece sobre `height_at(0,0)` y mantiene la física desactivada hasta tener colisiones en radio 2; muestra «Generando mundo…» durante la carga. Implementado junto con M5.05 para evitar caídas durante el inicio.
 - [ ] M5.09 — Modo vuelo.
 - [ ] M5.10 — Reaparición.
 - [ ] M5.11 — Cámara.
@@ -68,7 +68,7 @@ Fecha última actualización: 2026-10-31
 ## Archivos existentes (ruta · propósito · último milestone que lo tocó)
 - `res://project.godot` · configuración, escena principal y autoloads `GameSettings`/`InputSetup` · M4.11
 - `res://scenes/main.tscn` · escena raíz `Main` (Node3D) con script `main.gd` · M1.02
-- `res://scripts/main.gd` · crea luz direccional, entorno, cámara libre como objetivo de streaming y etiqueta de depuración · M4.09
+- `res://scripts/main.gd` · crea entorno, jugador con spawn gating y overlay de estado · M5.08
 - `res://scripts/util/fly_camera.gd` · cámara libre temporal sobre `Camera3D` · M1.08
 - `res://scripts/autoload/game_settings.gd` · semilla de mundo persistente para la sesión · M4.11
 - `res://scripts/autoload/input_setup.gd` · registro de acciones de entrada y comprobación temporal · M1.04
@@ -81,11 +81,11 @@ Fecha última actualización: 2026-10-31
 - `res://scripts/world/mesh_builder.gd` · clase `MeshBuilder` con geometría, UV, colores e índices para caras; buffers predefinidos para evitar arrays temporales por cara · M3.12
 - `res://scripts/world/chunk_mesher.gd` · clase `ChunkMesher` optimizada para acceso directo a bytes y caras expuestas · M3.12
 - `res://scripts/world/world_generator.gd` · `WorldGenerator(world_seed)`, mapa de alturas, capas, agua, árboles y cuevas deterministas · M4.11
-- `res://scripts/world/chunk.gd` · nodo `Chunk` con `SolidMesh`, `WaterMesh`, `apply_mesh`, AABB y materiales compartidos · M4.06
-- `res://scripts/world/world.gd` · carga dinámica priorizada, mallas condicionadas por vecinos, descarga con histéresis y semilla recibida de `GameSettings` · M4.11
+- `res://scripts/world/chunk.gd` · nodo `Chunk` con mallas y colisión trimesh opcional · M5.05
+- `res://scripts/world/world.gd` · streaming, colisiones cercanas, espera de colisiones para spawn y semilla de `GameSettings` · M5.08
 - `res://scripts/world/voxel_raycast.gd` · clase `VoxelRaycast` · M1.02
 - `res://scripts/world/save_manager.gd` · clase `SaveManager` · M1.02
-- `res://scripts/player/player.gd` · jugador `CharacterBody3D` con cápsula, Head y cámara · M5.01
+- `res://scripts/player/player.gd` · jugador con cámara, movimiento horizontal y gravedad · M5.04
 - `res://scripts/player/block_interaction.gd` · clase `BlockInteraction` · M1.02
 - `res://scripts/player/block_highlight.gd` · clase `BlockHighlight` · M1.02
 - `res://scripts/ui/hud.gd` · clase `Hud` · M1.02

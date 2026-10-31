@@ -72,6 +72,7 @@ func update_streaming(world_position: Vector3) -> void:
 		_refresh_streaming_queues(center_chunk)
 	_process_one_data_chunk()
 	_process_one_mesh_chunk()
+	_update_collision_range(center_chunk)
 
 func set_render_distance(distance: int) -> void:
 	render_distance = clampi(distance, Const.MIN_RENDER_DISTANCE, Const.MAX_RENDER_DISTANCE)
@@ -85,6 +86,33 @@ func get_pending_mesh_count() -> int:
 
 func get_meshed_chunk_count() -> int:
 	return meshed_chunks.size()
+
+func get_collision_chunk_count() -> int:
+	var count: int = 0
+	for chunk_variant: Variant in chunk_nodes.values():
+		var chunk_node: Chunk = chunk_variant as Chunk
+		if chunk_node.has_collision():
+			count += 1
+	return count
+
+func are_collisions_ready(center_chunk: Vector2i, radius: int) -> bool:
+	for dz: int in range(-radius, radius + 1):
+		for dx: int in range(-radius, radius + 1):
+			if dx * dx + dz * dz > radius * radius:
+				continue
+			var coord: Vector2i = center_chunk + Vector2i(dx, dz)
+			var chunk_node: Chunk = chunk_nodes.get(coord) as Chunk
+			if chunk_node == null or not chunk_node.has_collision():
+				return false
+	return true
+
+func _update_collision_range(center_chunk: Vector2i) -> void:
+	var radius_squared: int = Const.COLLISION_RADIUS * Const.COLLISION_RADIUS
+	for coord_variant: Variant in chunk_nodes.keys():
+		var coord: Vector2i = coord_variant as Vector2i
+		var chunk_node: Chunk = chunk_nodes[coord] as Chunk
+		var enable_collision: bool = (coord - center_chunk).length_squared() <= radius_squared
+		chunk_node.set_collision_enabled(enable_collision)
 
 func _refresh_streaming_queues(center_chunk: Vector2i) -> void:
 	_stream_center_chunk = center_chunk
