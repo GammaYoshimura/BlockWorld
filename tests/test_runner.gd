@@ -50,6 +50,8 @@ func _ready() -> void:
 	_test_face_visibility()
 	_current_milestone = "M4.01"
 	_test_world_chunk_manager()
+	_current_milestone = "M4.02"
+	_test_world_generator_deterministic()
 
 func _test_world_to_chunk_and_local() -> void:
 	for test_case: Vector3i in COORD_CASES:
@@ -396,9 +398,18 @@ func _test_world_chunk_manager() -> void:
 	_check(world.get_child_count() == 25, "5x5 crea exactamente 25 nodos Chunk")
 	world.free()
 
+func _test_world_generator_deterministic() -> void:
+	var generator: WorldGenerator = WorldGenerator.new(12345)
+	var first: ChunkData = generator.generate(3, -2)
+	var second: ChunkData = generator.generate(3, -2)
+	_check(first.coord == Vector2i(3, -2), "generate conserva coordenadas")
+	_check(first.generated, "generate marca los datos como generados")
+	_check(first.blocks == second.blocks, "generate devuelve bloques idénticos para misma semilla y coordenada")
+	_check(first.blocks.size() == Const.CHUNK_SIZE * Const.CHUNK_HEIGHT * Const.CHUNK_SIZE, "generate conserva el tamaño del chunk")
+
 @warning_ignore("shadowed_variable_base_class")
 func _check(cond: bool, name: String) -> void:
 	if cond:
-		print("PASS ", _current_milestone, " ", name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11 # DEBUG-M4.01
+		print("PASS ", _current_milestone, " ", name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11 # DEBUG-M4.01 # DEBUG-M4.02
 	else:
-		push_error("FAIL " + _current_milestone + " " + name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11 # DEBUG-M4.01
+		push_error("FAIL " + _current_milestone + " " + name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11 # DEBUG-M4.01 # DEBUG-M4.02

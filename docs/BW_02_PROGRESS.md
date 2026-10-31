@@ -38,7 +38,7 @@ Fecha última actualización: 2026-10-31
 
 ## Fase 4 — Mundo y terreno
 - [x] M4.01 — Gestor de chunks estático (`World.ensure_chunk` crea/reutiliza datos y nodo; `World.remesh` espera los cuatro vecinos; el caso 5×5 malló solo los 9 chunks interiores y dejó el borde sin malla).
-- [ ] M4.02 — `WorldGenerator` determinista.
+- [x] M4.02 — `WorldGenerator` determinista (`generate(cx,cz)` devuelve un `ChunkData` plano independiente, con coordenadas y marca `generated`; misma semilla/coordenada produce los mismos bloques).
 - [ ] M4.03 — Mapa de alturas con ruido.
 - [ ] M4.04 — Capas del terreno.
 - [ ] M4.05 — Agua.
@@ -67,7 +67,7 @@ Fecha última actualización: 2026-10-31
 - `res://scripts/world/chunk_data.gd` · array de bloques, índices, acceso, protección y relleno plano temporal · M2.04
 - `res://scripts/world/mesh_builder.gd` · clase `MeshBuilder` con geometría, UV, colores e índices para caras; buffers predefinidos para evitar arrays temporales por cara · M3.12
 - `res://scripts/world/chunk_mesher.gd` · clase `ChunkMesher` optimizada para acceso directo a bytes y caras expuestas · M3.12
-- `res://scripts/world/world_generator.gd` · clase `WorldGenerator` · M1.02
+- `res://scripts/world/world_generator.gd` · `WorldGenerator(world_seed)` y generación pura de chunks planos · M4.02
 - `res://scripts/world/chunk.gd` · nodo `Chunk` con `SolidMesh`, `WaterMesh`, `apply_mesh`, AABB y material sólido compartido · M3.07
 - `res://scripts/world/world.gd` · gestor de datos y nodos de chunk con remallado condicionado por vecinos · M4.01
 - `res://scripts/world/voxel_raycast.gd` · clase `VoxelRaycast` · M1.02
