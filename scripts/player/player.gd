@@ -38,7 +38,7 @@ func _physics_process(delta: float) -> void:
 	var was_on_floor: bool = is_on_floor()
 	velocity.x = move_toward(velocity.x, target_velocity.x, acceleration * delta)
 	velocity.z = move_toward(velocity.z, target_velocity.z, acceleration * delta)
-	var jump_requested: bool = Input.is_action_just_pressed(&"jump") and is_on_floor()
+	var jump_requested: bool = Input.is_action_pressed(&"jump") and is_on_floor()
 	if jump_requested:
 		velocity.y = Const.JUMP_VELOCITY
 	if is_on_floor():
