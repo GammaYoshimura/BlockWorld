@@ -79,7 +79,7 @@ Fecha última actualización: 2026-10-31
 - [x] M7.03 — Overlay F3 incluye FPS y ms/frame, XYZ y bloque, chunk, dirección cardinal, bloque apuntado, conteos de chunks y colisiones, colas de datos/mallas/remallado, último tiempo de mallado y semilla.
 - [x] M7.04 — Esc pausa el árbol de juego, libera el ratón y muestra Continuar/Salir; Esc o Continuar reanuda y captura el ratón. Falta confirmación de uso en juego.
 - [x] M7.05 — Menú inicial con semilla opcional; vacío elige una semilla aleatoria persistente en sesión. «Nuevo mundo» entra en la escena principal; «Salir» cierra la aplicación. Falta confirmación de uso en juego.
-- [ ] M7.06 — Slider de distancia de renderizado previsto.
+- [x] M7.06 — Slider en pausa para render distance entre límites configurados; actualiza `GameSettings`, reinicia las colas de streaming en vivo y ajusta el `far` de la cámara. Falta confirmación en juego.
 
 ## Desviaciones del contrato (si las hay, aprobadas por el humano)
 - M1.04: el criterio menciona 25 acciones, pero la lista de la sección 3.7 enumera 24; se implementaron las 24 enumeradas, sin inventar una acción.
@@ -90,7 +90,7 @@ Fecha última actualización: 2026-10-31
 - `res://scenes/main_menu.tscn` · menú inicial con semilla y acceso al mundo · M7.05
 - `res://scripts/main.gd` · crea entorno, jugador con spawn gating y overlay F3 completo · M7.03
 - `res://scripts/util/fly_camera.gd` · cámara libre temporal sobre `Camera3D` · M1.08
-- `res://scripts/autoload/game_settings.gd` · semilla de mundo persistente para la sesión · M4.11
+- `res://scripts/autoload/game_settings.gd` · semilla y distancia de renderizado persistentes durante la sesión · M7.06
 - `res://scripts/autoload/input_setup.gd` · registro de acciones de entrada y comprobación temporal · M1.04
 - `res://scripts/util/const.gd` · constantes del contrato · M1.03
 - `res://scripts/util/blocks.gd` · ids, propiedades y consultas de bloques con tablas de acceso rápido por id · M3.12
@@ -109,7 +109,7 @@ Fecha última actualización: 2026-10-31
 - `res://scripts/player/block_highlight.gd` · malla de contorno y raycast de selección · M6.02
 - `res://scripts/player/block_interaction.gd` · rompe bloque apuntado con clic izquierdo · M6.03
 - `res://scripts/ui/crosshair.gd` · mira centrada con contorno · M7.01
-- `res://scripts/ui/pause_menu.gd` · menú de pausa procesado aunque el árbol esté pausado · M7.04
+- `res://scripts/ui/pause_menu.gd` · menú de pausa procesado aunque el árbol esté pausado, con ajuste de distancia · M7.06
 - `res://scripts/ui/main_menu.gd` · menú de inicio con semilla opcional · M7.05
 - `res://scripts/world/voxel_raycast.gd` · raycast voxel DDA · M6.01
 - `res://scripts/player/block_interaction.gd` · clase `BlockInteraction` · M1.02

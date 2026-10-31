@@ -1,6 +1,7 @@
 extends Node
 
 var world_seed: int = 0
+var render_distance: int = Const.DEFAULT_RENDER_DISTANCE
 
 func resolve_world_seed() -> int:
 	if world_seed == 0:

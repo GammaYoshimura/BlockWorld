@@ -41,7 +41,7 @@ func _ready() -> void:
 	_camera = _player.get_camera()
 	_camera.fov = 70.0
 	_camera.near = 0.05
-	_camera.far = float((Const.DEFAULT_RENDER_DISTANCE + 2) * Const.CHUNK_SIZE)
+	_camera.far = float((GameSettings.render_distance + 2) * Const.CHUNK_SIZE)
 	_world.stream_target = _camera
 	_block_highlight = BlockHighlight.new()
 	_block_highlight.camera = _camera
@@ -62,6 +62,7 @@ func _ready() -> void:
 	var pause_menu: Control = PauseMenuScript.new()
 	pause_menu.name = "PauseMenu"
 	debug_layer.add_child(pause_menu)
+	pause_menu.configure(_world, _camera)
 	_debug_label = Label.new()
 	_debug_label.position = Vector2(10.0, 10.0)
 	_debug_label.add_theme_color_override("font_color", Color.WHITE)
@@ -78,7 +79,7 @@ func _ready() -> void:
 func _build_streamed_world() -> void:
 	_world = World.new()
 	_world.name = "World"
-	_world.set_render_distance(Const.DEFAULT_RENDER_DISTANCE)
+	_world.set_render_distance(GameSettings.render_distance)
 	_world.stream_target = _camera
 	add_child(_world)
 
