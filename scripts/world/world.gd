@@ -94,6 +94,9 @@ func get_pending_data_count() -> int:
 func get_pending_mesh_count() -> int:
 	return _mesh_queue.size()
 
+func get_pending_dirty_count() -> int:
+	return _dirty_chunks.size()
+
 func get_meshed_chunk_count() -> int:
 	return meshed_chunks.size()
 

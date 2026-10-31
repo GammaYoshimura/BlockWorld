@@ -78,7 +78,7 @@ func _build_streamed_world() -> void:
 	_world.stream_target = _camera
 	add_child(_world)
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if not _spawn_pending and _player.global_position.y < -20.0:
 		_begin_spawn_loading()
 	if _spawn_pending and _world.are_collisions_ready(Vector2i.ZERO, 2):
@@ -95,7 +95,7 @@ func _process(_delta: float) -> void:
 	if Input.is_action_just_pressed(&"toggle_debug"):
 		_debug_label.visible = not _debug_label.visible
 	if _debug_label.visible:
-		_update_debug_label()
+		_update_debug_label(delta)
 
 func _begin_spawn_loading() -> void:
 	_spawn_pending = true
@@ -143,23 +143,55 @@ func _spawn_candidate_before(a: Vector2i, b: Vector2i) -> bool:
 		return a.x < b.x
 	return distance_a < distance_b
 
-func _update_debug_label() -> void:
+func _update_debug_label(delta: float = 1.0 / 60.0) -> void:
 	var camera_position: Vector3 = _camera.global_position
 	var horizontal_speed: float = Vector2(_player.velocity.x, _player.velocity.z).length()
-	_debug_label.text = "FPS: %d\nMesh: %s ms\nChunks: %d data / %d mesh\nCollision chunks: %d\nFloor: %s (vy %s)\nSpeed: %s / Fly: %s / Step: %s\nHotbar: %d %s\nPos: %s, %s, %s" % [
+	var block_x: int = floori(_player.global_position.x)
+	var block_y: int = floori(_player.global_position.y)
+	var block_z: int = floori(_player.global_position.z)
+	var chunk: Vector2i = Coords.world_to_chunk(block_x, block_z)
+	var facing: String = _facing_name(-_player.global_transform.basis.z)
+	var hit: Dictionary = VoxelRaycast.cast(
+		camera_position,
+		-_camera.global_transform.basis.z,
+		Const.PLAYER_REACH,
+		Callable(_world, "get_block")
+	)
+	var target_description: String = "ninguno"
+	if bool(hit["hit"]):
+		var target: Vector3i = hit["block"]
+		target_description = "%s %s" % [Blocks.name_of(int(hit["block_id"])), str(target)]
+	_debug_label.text = "FPS: %d (%.2f ms/frame)\nXYZ: %.2f / %.2f / %.2f | bloque: %d, %d, %d\nChunk: %d, %d | dirección: %s\nApuntando: %s\nChunks: %d datos / %d mallas / %d colisión\nPendiente: %d datos / %d mallas / %d remallados\nÚltimo mallado: %.2f ms | semilla: %d\nSuelo: %s (vy %.2f) | velocidad: %.2f | vuelo: %s | auto-salto: %s\nHotbar: %d %s" % [
 		Engine.get_frames_per_second(),
-		String.num(_mesh_build_ms, 2),
+		maxf(delta, 0.000001) * 1000.0,
+		_player.global_position.x,
+		_player.global_position.y,
+		_player.global_position.z,
+		block_x,
+		block_y,
+		block_z,
+		chunk.x,
+		chunk.y,
+		facing,
+		target_description,
 		_world.chunks.size(),
 		_world.get_meshed_chunk_count(),
 		_world.get_collision_chunk_count(),
+		_world.get_pending_data_count(),
+		_world.get_pending_mesh_count(),
+		_world.get_pending_dirty_count(),
+		_mesh_build_ms,
+		_world.world_seed,
 		str(_player.is_on_floor()),
-		String.num(_player.velocity.y, 2),
-		String.num(horizontal_speed, 2),
+		_player.velocity.y,
+		horizontal_speed,
 		str(_player.is_flying),
 		_player.auto_step_status,
 		_block_interaction.selected + 1,
-		Blocks.name_of(_block_interaction.slots[_block_interaction.selected]),
-		String.num(camera_position.x, 2),
-		String.num(camera_position.y, 2),
-		String.num(camera_position.z, 2)
+		Blocks.name_of(_block_interaction.slots[_block_interaction.selected])
 	]
+
+func _facing_name(direction: Vector3) -> String:
+	if absf(direction.x) > absf(direction.z):
+		return "este" if direction.x > 0.0 else "oeste"
+	return "sur" if direction.z > 0.0 else "norte"

@@ -76,7 +76,7 @@ Fecha última actualización: 2026-10-31
 ## Fase 7 — Interfaz
 - [x] M7.01 — Mira blanca con contorno negro, centrada en un `Control` a pantalla completa y redibujada según el tamaño del viewport. Falta confirmación visual del usuario.
 - [x] M7.02 — Hotbar inferior con 9 slots, texturas del atlas muestreadas con nearest, borde visible para el seleccionado y actualización al cambiar selección o contenido (pick block). La ventana real muestra la barra; falta confirmación del usuario.
-- [ ] M7.03 — Overlay F3 completo previsto.
+- [x] M7.03 — Overlay F3 incluye FPS y ms/frame, XYZ y bloque, chunk, dirección cardinal, bloque apuntado, conteos de chunks y colisiones, colas de datos/mallas/remallado, último tiempo de mallado y semilla.
 - [ ] M7.04 — Menú de pausa previsto.
 - [ ] M7.05 — Menú principal y semilla prevista.
 - [ ] M7.06 — Slider de distancia de renderizado previsto.
@@ -87,7 +87,7 @@ Fecha última actualización: 2026-10-31
 ## Archivos existentes (ruta · propósito · último milestone que lo tocó)
 - `res://project.godot` · configuración, escena principal y autoloads `GameSettings`/`InputSetup` · M4.11
 - `res://scenes/main.tscn` · escena raíz `Main` (Node3D) con script `main.gd` · M1.02
-- `res://scripts/main.gd` · crea entorno, jugador con spawn gating, cámara configurada y overlay de estado · M5.11
+- `res://scripts/main.gd` · crea entorno, jugador con spawn gating y overlay F3 completo · M7.03
 - `res://scripts/util/fly_camera.gd` · cámara libre temporal sobre `Camera3D` · M1.08
 - `res://scripts/autoload/game_settings.gd` · semilla de mundo persistente para la sesión · M4.11
 - `res://scripts/autoload/input_setup.gd` · registro de acciones de entrada y comprobación temporal · M1.04
@@ -101,7 +101,7 @@ Fecha última actualización: 2026-10-31
 - `res://scripts/world/chunk_mesher.gd` · clase `ChunkMesher` optimizada para acceso directo a bytes y caras expuestas · M3.12
 - `res://scripts/world/world_generator.gd` · `WorldGenerator(world_seed)`, mapa de alturas, capas, agua, árboles y cuevas deterministas · M4.11
 - `res://scripts/world/chunk.gd` · nodo `Chunk` con mallas y colisión trimesh opcional · M5.05
-- `res://scripts/world/world.gd` · streaming, colisiones cercanas, espera de colisiones para spawn y semilla de `GameSettings` · M5.08
+- `res://scripts/world/world.gd` · streaming, colisiones cercanas, espera de colisiones para spawn, semilla y conteo de tareas pendientes · M7.03
 - `res://scripts/world/voxel_raycast.gd` · clase `VoxelRaycast` · M1.02
 - `res://scripts/world/save_manager.gd` · clase `SaveManager` · M1.02
 - `res://scripts/player/player.gd` · jugador con movimiento, salto, vuelo, respawn y cámara · M5.10
@@ -112,7 +112,7 @@ Fecha última actualización: 2026-10-31
 - `res://scripts/player/block_interaction.gd` · clase `BlockInteraction` · M1.02
 - `res://scripts/player/block_highlight.gd` · clase `BlockHighlight` · M1.02
 - `res://scripts/ui/hud.gd` · clase `Hud` · M1.02
-- `res://scripts/ui/hotbar.gd` · clase `Hotbar` · M1.02
+- `res://scripts/ui/hotbar.gd` · hotbar visual con iconos del atlas, selección y slots sincronizados con interacción · M7.02
 - `res://scripts/ui/debug_overlay.gd` · clase `DebugOverlay` · M1.02
 - `res://scripts/ui/pause_menu.gd` · clase `PauseMenu` · M1.02
 - `res://scripts/ui/main_menu.gd` · clase `MainMenu` · M1.02
