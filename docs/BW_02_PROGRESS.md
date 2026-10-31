@@ -49,6 +49,19 @@ Fecha última actualización: 2026-10-31
 - [x] M4.10 — Descarga más allá de `render_distance+UNLOAD_MARGIN`; los datos modificados pasan a `modified_chunks` y se restauran al volver. Pruebas recorrieron ~300 bloques: datos/nodos acotados y sincronizados.
 - [x] M4.11 — `GameSettings.world_seed` se resuelve una vez: 0 genera un valor aleatorio persistente en sesión; `World` lo entrega a `WorldGenerator`. Pruebas PASS en tres coordenadas (misma semilla = mismos bloques; otra semilla = mundo distinto).
 
+## Fase 5 — Jugador
+- [x] M5.01 — `Player` construye cápsula de colisión (`radius=0.3`, `height=1.8`), pivote `Head` a altura de ojos y `Camera3D`; la escena principal usa al jugador como objetivo del streaming y ya no crea la cámara libre. Godot ejecuta la escena sin errores; pendiente confirmación visual del usuario.
+- [ ] M5.02 — Mirada con ratón.
+- [ ] M5.03 — Movimiento horizontal.
+- [ ] M5.04 — Gravedad.
+- [ ] M5.05 — Colisión con el mundo.
+- [ ] M5.06 — Salto.
+- [ ] M5.07 — Sprint y agacharse.
+- [ ] M5.08 — Aparición segura.
+- [ ] M5.09 — Modo vuelo.
+- [ ] M5.10 — Reaparición.
+- [ ] M5.11 — Cámara.
+
 ## Desviaciones del contrato (si las hay, aprobadas por el humano)
 - M1.04: el criterio menciona 25 acciones, pero la lista de la sección 3.7 enumera 24; se implementaron las 24 enumeradas, sin inventar una acción.
 
@@ -72,7 +85,7 @@ Fecha última actualización: 2026-10-31
 - `res://scripts/world/world.gd` · carga dinámica priorizada, mallas condicionadas por vecinos, descarga con histéresis y semilla recibida de `GameSettings` · M4.11
 - `res://scripts/world/voxel_raycast.gd` · clase `VoxelRaycast` · M1.02
 - `res://scripts/world/save_manager.gd` · clase `SaveManager` · M1.02
-- `res://scripts/player/player.gd` · clase `Player` · M1.02
+- `res://scripts/player/player.gd` · jugador `CharacterBody3D` con cápsula, Head y cámara · M5.01
 - `res://scripts/player/block_interaction.gd` · clase `BlockInteraction` · M1.02
 - `res://scripts/player/block_highlight.gd` · clase `BlockHighlight` · M1.02
 - `res://scripts/ui/hud.gd` · clase `Hud` · M1.02

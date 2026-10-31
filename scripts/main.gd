@@ -18,14 +18,14 @@ func _ready() -> void:
 	world_environment.environment = environment
 	add_child(world_environment)
 
-	var camera: Camera3D = Camera3D.new()
 	var camera_position: Vector3 = Vector3(8.0, 34.0, 52.0)
 	var world_center: Vector3 = Vector3(8.0, 20.0, 8.0)
-	camera.position = camera_position
-	camera.look_at_from_position(camera_position, world_center, Vector3.UP)
-	camera.set_script(preload("res://scripts/util/fly_camera.gd"))
-	add_child(camera)
-	_camera = camera
+	var player: Player = Player.new()
+	player.name = "Player"
+	player.position = camera_position - Vector3.UP * Const.PLAYER_EYE_HEIGHT
+	add_child(player)
+	_camera = player.get_camera()
+	_camera.look_at_from_position(camera_position, world_center, Vector3.UP)
 
 	_build_streamed_world()
 
