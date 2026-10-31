@@ -58,6 +58,8 @@ func _ready() -> void:
 	_test_terrain_layers()
 	_current_milestone = "M4.05"
 	_test_water_generation()
+	_current_milestone = "M4.06"
+	_test_water_meshing_and_material()
 
 func _test_world_to_chunk_and_local() -> void:
 	for test_case: Vector3i in COORD_CASES:
@@ -491,9 +493,41 @@ func _test_water_generation() -> void:
 				break
 	_check(found_sea_minus_three, "columna con h=SEA_LEVEL-3 se rellena hasta el nivel del mar")
 
+func _test_water_meshing_and_material() -> void:
+	var single_data: ChunkData = ChunkData.new()
+	single_data.set_block(1, 1, 1, Blocks.WATER)
+	var single_result: Dictionary = ChunkMesher.build(single_data, {})
+	var single_water: MeshBuilder = single_result["water"] as MeshBuilder
+	_check(single_water.face_count() == 6, "agua aislada genera seis caras")
+
+	var pair_data: ChunkData = ChunkData.new()
+	pair_data.set_block(1, 1, 1, Blocks.WATER)
+	pair_data.set_block(2, 1, 1, Blocks.WATER)
+	var pair_result: Dictionary = ChunkMesher.build(pair_data, {})
+	var pair_water: MeshBuilder = pair_result["water"] as MeshBuilder
+	_check(pair_water.face_count() == 10, "dos bloques de agua contiguos generan diez caras")
+
+	var bottom_data: ChunkData = ChunkData.new()
+	bottom_data.set_block(1, 0, 1, Blocks.STONE)
+	bottom_data.set_block(1, 1, 1, Blocks.WATER)
+	var bottom_result: Dictionary = ChunkMesher.build(bottom_data, {})
+	var bottom_water: MeshBuilder = bottom_result["water"] as MeshBuilder
+	_check(bottom_water.face_count() == 5, "piedra debajo oculta la cara inferior del agua")
+
+	var water_material: StandardMaterial3D = BlockMaterials.water()
+	_check(water_material.shading_mode == BaseMaterial3D.SHADING_MODE_UNSHADED, "material de agua unshaded")
+	_check(water_material.transparency == BaseMaterial3D.TRANSPARENCY_ALPHA, "material de agua usa alpha")
+	_check(water_material.albedo_color == Color(0.2, 0.4, 0.9, 0.6), "material de agua es azul semitransparente")
+	_check(water_material.cull_mode == BaseMaterial3D.CULL_BACK, "material de agua descarta caras traseras")
+	_check(water_material.texture_filter == BaseMaterial3D.TEXTURE_FILTER_NEAREST, "material de agua usa nearest")
+	var chunk: Chunk = Chunk.new()
+	var water_mesh: MeshInstance3D = chunk.get_node("WaterMesh") as MeshInstance3D
+	_check(water_mesh.material_override == water_material, "Chunk asigna el material compartido del agua")
+	chunk.free()
+
 @warning_ignore("shadowed_variable_base_class")
 func _check(cond: bool, name: String) -> void:
 	if cond:
-		print("PASS ", _current_milestone, " ", name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11 # DEBUG-M4.01 # DEBUG-M4.02 # DEBUG-M4.03 # DEBUG-M4.04 # DEBUG-M4.05
+		print("PASS ", _current_milestone, " ", name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11 # DEBUG-M4.01 # DEBUG-M4.02 # DEBUG-M4.03 # DEBUG-M4.04 # DEBUG-M4.05 # DEBUG-M4.06
 	else:
-		push_error("FAIL " + _current_milestone + " " + name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11 # DEBUG-M4.01 # DEBUG-M4.02 # DEBUG-M4.03 # DEBUG-M4.04 # DEBUG-M4.05
+		push_error("FAIL " + _current_milestone + " " + name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11 # DEBUG-M4.01 # DEBUG-M4.02 # DEBUG-M4.03 # DEBUG-M4.04 # DEBUG-M4.05 # DEBUG-M4.06

@@ -1,6 +1,7 @@
 class_name BlockMaterials
 
 static var _solid_material: StandardMaterial3D
+static var _water_material: StandardMaterial3D
 
 static func solid() -> StandardMaterial3D:
 	if _solid_material == null:
@@ -13,3 +14,13 @@ static func solid() -> StandardMaterial3D:
 		_solid_material.alpha_scissor_threshold = 0.5
 		_solid_material.cull_mode = BaseMaterial3D.CULL_BACK
 	return _solid_material
+
+static func water() -> StandardMaterial3D:
+	if _water_material == null:
+		_water_material = StandardMaterial3D.new()
+		_water_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		_water_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		_water_material.albedo_color = Color(0.2, 0.4, 0.9, 0.6)
+		_water_material.cull_mode = BaseMaterial3D.CULL_BACK
+		_water_material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+	return _water_material

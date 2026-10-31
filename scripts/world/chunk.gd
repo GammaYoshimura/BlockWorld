@@ -19,6 +19,7 @@ func _init(chunk_coord: Vector2i = Vector2i.ZERO) -> void:
 	_water_mesh = MeshInstance3D.new()
 	_water_mesh.name = "WaterMesh"
 	_water_mesh.custom_aabb = _chunk_aabb()
+	_water_mesh.material_override = BlockMaterials.water()
 	add_child(_water_mesh)
 
 func apply_mesh(result: Dictionary) -> void:
