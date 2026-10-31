@@ -97,6 +97,7 @@ Fecha última actualización: 2026-10-31
 - [ ] M9.03 — El streaming carga archivos de chunks antes de generarlos; chunks modificados se guardan al descargarse y al salir. Falta comprobar persistencia después de cerrar y reabrir.
 - [ ] M9.04 — Archivos `world.json` y chunks se escriben a `.tmp` y se renombran; Timer de 60 s guarda chunks editados y estado de sesión, además del guardado al salir. Pendiente verificar recuperación desde `.tmp`/cierre.
 - [ ] M9.05 — Cabecera, versión, tamaño y descompresión inválidos producen un warning y devuelven null para que el generador rehaga el chunk; falta verificar archivo corrupto real.
+- [ ] M9.06 — Menú lista mundos desde `world.json`, permite cargar semilla/posición/hotbar y borrar una carpeta completa solo tras confirmar. Falta probar crear 2, cargar ambos y borrar uno.
 
 ## Desviaciones del contrato (si las hay, aprobadas por el humano)
 - M1.04: el criterio menciona 25 acciones, pero la lista de la sección 3.7 enumera 24; se implementaron las 24 enumeradas, sin inventar una acción.
@@ -105,9 +106,9 @@ Fecha última actualización: 2026-10-31
 - `res://project.godot` · configuración, escena principal y autoloads `GameSettings`/`InputSetup` · M4.11
 - `res://scenes/main.tscn` · escena raíz `Main` (Node3D) con script `main.gd` · M1.02
 - `res://scenes/main_menu.tscn` · menú inicial con semilla y acceso al mundo · M7.05
-- `res://scripts/main.gd` · crea entorno, jugador con spawn gating, overlay F3 y guardado/autoguardado · M9.04
+- `res://scripts/main.gd` · crea entorno, restaura jugador guardado, spawn gating, overlay F3 y guardado/autoguardado · M9.06
 - `res://scripts/util/fly_camera.gd` · cámara libre temporal sobre `Camera3D` · M1.08
-- `res://scripts/autoload/game_settings.gd` · semilla, nombre y distancia de renderizado persistentes durante la sesión · M9.01
+- `res://scripts/autoload/game_settings.gd` · semilla, nombre, distancia y datos pendientes de carga durante la sesión · M9.06
 - `res://scripts/autoload/input_setup.gd` · registro de acciones de entrada y comprobación temporal · M1.04
 - `res://scripts/util/const.gd` · constantes del contrato · M1.03
 - `res://scripts/util/thread_result_queue.gd` · cola segura de resultados para tareas worker · M8.01
@@ -122,15 +123,15 @@ Fecha última actualización: 2026-10-31
 - `res://scripts/world/chunk_generation_task.gd` · worker estático para generar `ChunkData` sin tocar nodos o diccionarios de escena · M8.02
 - `res://scripts/world/chunk_mesh_task.gd` · worker estático para mallar snapshots de chunks · M8.03
 - `res://scripts/world/chunk.gd` · nodo `Chunk` con mallas y colisión trimesh opcional e histéresis de activación · M8.05
-- `res://scripts/world/world.gd` · streaming, generación/mallado en hilos, persistencia/autoguardado, descarte fuera de rango, cierre de tareas, colisiones y spawn · M9.04
+- `res://scripts/world/world.gd` · streaming, generación/mallado en hilos, persistencia/autoguardado, descarte fuera de rango, cierre de tareas, colisiones y spawn · M9.06
 - `res://scripts/world/voxel_raycast.gd` · clase `VoxelRaycast` · M1.02
-- `res://scripts/world/save_manager.gd` · escritura/lectura comprimida y validación de archivos de chunk · M9.05
+- `res://scripts/world/save_manager.gd` · escritura/lectura comprimida, validación y administración de mundos · M9.06
 - `res://scripts/player/player.gd` · jugador con movimiento, salto, vuelo, respawn y cámara · M5.10
 - `res://scripts/player/block_highlight.gd` · malla de contorno y raycast de selección · M6.02
 - `res://scripts/player/block_interaction.gd` · rompe bloque apuntado con clic izquierdo · M6.03
 - `res://scripts/ui/crosshair.gd` · mira centrada con contorno · M7.01
 - `res://scripts/ui/pause_menu.gd` · menú de pausa procesado aunque el árbol esté pausado, con ajuste de distancia · M7.06
-- `res://scripts/ui/main_menu.gd` · menú de inicio con semilla opcional · M7.05
+- `res://scripts/ui/main_menu.gd` · menú de inicio con semilla y lista de mundos guardados · M9.06
 - `res://scripts/world/voxel_raycast.gd` · raycast voxel DDA · M6.01
 - `res://scripts/player/block_interaction.gd` · clase `BlockInteraction` · M1.02
 - `res://scripts/player/block_highlight.gd` · clase `BlockHighlight` · M1.02
@@ -138,7 +139,7 @@ Fecha última actualización: 2026-10-31
 - `res://scripts/ui/hotbar.gd` · hotbar visual con iconos del atlas, selección y slots sincronizados con interacción · M7.02
 - `res://scripts/ui/debug_overlay.gd` · clase `DebugOverlay` · M1.02
 - `res://scripts/ui/pause_menu.gd` · clase `PauseMenu` · M1.02
-- `res://scripts/ui/main_menu.gd` · clase `MainMenu` · M1.02
+- `res://scripts/ui/main_menu.gd` · clase `MainMenu` con acciones de cargar/borrar mundos · M9.06
 - `res://tests/test_runner.tscn` · escena `Node` del runner · M1.02
 - `res://tests/test_runner.gd` · runner con casos de M1.06, M2.01 a M2.05, M3.02, M3.04, M3.05, M3.07 a M3.11 y M4.01 a M4.11 · M4.11
 - `res://.gitignore` · exclusión de `.godot/` · proyecto base

@@ -124,3 +124,79 @@ static func _write_atomic(file_path: String, contents: PackedByteArray) -> Error
 	if rename_error != OK:
 		return rename_error
 	return OK
+
+static func list_saved_worlds() -> Array[Dictionary]:
+	var worlds: Array[Dictionary] = []
+	var saves_directory: String = "user://saves"
+	var directory: DirAccess = DirAccess.open(saves_directory)
+	if directory == null:
+		return worlds
+	directory.list_dir_begin()
+	while true:
+		var entry: String = directory.get_next()
+		if entry.is_empty():
+			break
+		if entry.begins_with(".") or not directory.current_is_dir():
+			continue
+		var metadata: Dictionary = load_world_metadata(entry)
+		if metadata.is_empty():
+			continue
+		worlds.append({
+			"directory": entry,
+			"name": str(metadata.get("name", entry)),
+			"seed": int(metadata.get("seed", 0))
+		})
+	directory.list_dir_end()
+	worlds.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return str(a["name"]) < str(b["name"]))
+	return worlds
+
+static func load_world_metadata(world_name: String) -> Dictionary:
+	var file_path: String = "%s/world.json" % _save_directory(world_name)
+	if not FileAccess.file_exists(file_path):
+		return {}
+	var file: FileAccess = FileAccess.open(file_path, FileAccess.READ)
+	if file == null:
+		return {}
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	file.close()
+	if parsed is Dictionary and int(parsed.get("version", 0)) == 1:
+		return parsed as Dictionary
+	return {}
+
+static func delete_world(world_name: String) -> Error:
+	var directory_path: String = _save_directory(world_name)
+	var absolute_path: String = ProjectSettings.globalize_path(directory_path)
+	if not DirAccess.dir_exists_absolute(absolute_path):
+		return ERR_DOES_NOT_EXIST
+	var error: Error = _remove_directory_contents(directory_path)
+	if error != OK:
+		return error
+	return DirAccess.remove_absolute(absolute_path)
+
+static func _remove_directory_contents(directory_path: String) -> Error:
+	var directory: DirAccess = DirAccess.open(directory_path)
+	if directory == null:
+		return DirAccess.get_open_error()
+	var entries: Array[Dictionary] = []
+	directory.list_dir_begin()
+	while true:
+		var entry: String = directory.get_next()
+		if entry.is_empty():
+			break
+		if entry == "." or entry == "..":
+			continue
+		entries.append({"name": entry, "is_dir": directory.current_is_dir()})
+	directory.list_dir_end()
+	for entry_info: Dictionary in entries:
+		var child_path: String = "%s/%s" % [directory_path, entry_info["name"]]
+		var child_absolute: String = ProjectSettings.globalize_path(child_path)
+		var error: Error
+		if bool(entry_info["is_dir"]):
+			error = _remove_directory_contents(child_path)
+			if error == OK:
+				error = DirAccess.remove_absolute(child_absolute)
+		else:
+			error = DirAccess.remove_absolute(child_absolute)
+		if error != OK:
+			return error
+	return OK

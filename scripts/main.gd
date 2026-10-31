@@ -16,8 +16,10 @@ var _mesh_build_ms: float = 0.0
 var _peak_frame_ms: float = 0.0
 var _spawn_pending: bool = true
 var _autosave_timer: Timer
+var _has_loaded_player_position: bool = false
 
 func _ready() -> void:
+	var loaded_world_data: Dictionary = GameSettings.pending_world_data.duplicate(true)
 	var light: DirectionalLight3D = DirectionalLight3D.new()
 	light.rotation.x = deg_to_rad(-50.0)
 	add_child(light)
@@ -33,14 +35,22 @@ func _ready() -> void:
 	_build_streamed_world()
 	_player = Player.new()
 	_player.name = "Player"
-	_player.position = Vector3(
+	var initial_position: Vector3 = Vector3(
 		0.5,
 		float(_world.generator.height_at(0, 0) + 2),
 		0.5
 	)
+	var saved_player: Dictionary = loaded_world_data.get("player", {}) as Dictionary
+	var saved_position: Variant = saved_player.get("pos", [])
+	if saved_position is Array and saved_position.size() == 3:
+		initial_position = Vector3(float(saved_position[0]), float(saved_position[1]), float(saved_position[2]))
+		_has_loaded_player_position = true
+	_player.position = initial_position
 	add_child(_player)
 	_player.set_physics_process(false)
-	_player.head.rotation.x = -0.12
+	_player.rotation.y = float(saved_player.get("yaw", 0.0))
+	_player.head.rotation.x = float(saved_player.get("pitch", -0.12))
+	_player.is_flying = bool(saved_player.get("fly", false))
 	_camera = _player.get_camera()
 	_camera.fov = 70.0
 	_camera.near = 0.05
@@ -52,6 +62,18 @@ func _ready() -> void:
 	add_child(_block_highlight)
 	_block_interaction = BlockInteraction.new()
 	_block_interaction.setup(_player, _camera, _world)
+	var saved_hotbar: Variant = loaded_world_data.get("hotbar", [])
+	if saved_hotbar is Array and saved_hotbar.size() == _block_interaction.slots.size():
+		for slot_index: int in range(saved_hotbar.size()):
+			var block_id: int = int(saved_hotbar[slot_index])
+			if block_id > Blocks.AIR and block_id <= Blocks.WATER:
+				_block_interaction.slots[slot_index] = block_id
+	_block_interaction.selected = clampi(
+		int(loaded_world_data.get("selected", 0)),
+		0,
+		_block_interaction.slots.size() - 1
+	)
+	GameSettings.pending_world_data.clear()
 	add_child(_block_interaction)
 
 	var debug_layer: CanvasLayer = CanvasLayer.new()
@@ -101,8 +123,15 @@ func _process(delta: float) -> void:
 	_peak_frame_ms = maxf(_peak_frame_ms, delta * 1000.0)
 	if not _spawn_pending and _player.global_position.y < -20.0:
 		_begin_spawn_loading()
-	if _spawn_pending and _world.are_collisions_ready(Vector2i.ZERO, 2):
-		var safe_spawn: Variant = _find_safe_spawn()
+	var player_chunk: Vector2i = Coords.world_to_chunk(
+		floori(_player.global_position.x), floori(_player.global_position.z)
+	)
+	if _spawn_pending and _world.are_collisions_ready(player_chunk, 2):
+		var safe_spawn: Variant = null
+		if _has_loaded_player_position and _is_player_position_clear(_player.global_position):
+			safe_spawn = _player.global_position
+		else:
+			safe_spawn = _find_safe_spawn(Vector2i(floori(_player.global_position.x), floori(_player.global_position.z)))
 		if safe_spawn is Vector3:
 			_player.global_position = safe_spawn
 			_player.spawn_position = safe_spawn
@@ -152,15 +181,15 @@ func _begin_spawn_loading() -> void:
 	)
 	_loading_label.visible = true
 
-func _find_safe_spawn() -> Variant:
+func _find_safe_spawn(center: Vector2i = Vector2i.ZERO) -> Variant:
 	var candidates: Array[Vector2i] = []
 	for dz: int in range(-12, 13):
 		for dx: int in range(-12, 13):
 			candidates.append(Vector2i(dx, dz))
 	candidates.sort_custom(_spawn_candidate_before)
 	for offset: Vector2i in candidates:
-		var wx: int = offset.x
-		var wz: int = offset.y
+		var wx: int = center.x + offset.x
+		var wz: int = center.y + offset.y
 		var chunk_coord: Vector2i = Coords.world_to_chunk(wx, wz)
 		if not _world.is_chunk_loaded(chunk_coord):
 			continue
@@ -176,6 +205,20 @@ func _find_safe_spawn() -> Variant:
 		if clear:
 			return Vector3(float(wx) + 0.5, float(ground_height + 1), float(wz) + 0.5)
 	return null
+
+func _is_player_position_clear(candidate_position: Vector3) -> bool:
+	var min_x: int = floori(candidate_position.x - Const.PLAYER_WIDTH * 0.5)
+	var max_x: int = floori(candidate_position.x + Const.PLAYER_WIDTH * 0.5 - 0.0001)
+	var min_y: int = floori(candidate_position.y)
+	var max_y: int = floori(candidate_position.y + Const.PLAYER_HEIGHT - 0.0001)
+	var min_z: int = floori(candidate_position.z - Const.PLAYER_WIDTH * 0.5)
+	var max_z: int = floori(candidate_position.z + Const.PLAYER_WIDTH * 0.5 - 0.0001)
+	for y: int in range(min_y, max_y + 1):
+		for z: int in range(min_z, max_z + 1):
+			for x: int in range(min_x, max_x + 1):
+				if Blocks.is_solid(_world.get_block(x, y, z)):
+					return false
+	return true
 
 func _spawn_candidate_before(a: Vector2i, b: Vector2i) -> bool:
 	var distance_a: int = a.length_squared()
