@@ -36,6 +36,9 @@ func generate(cx: int, cz: int) -> ChunkData:
 					data.set_block(local_x, y, local_z, Blocks.SAND)
 			else:
 				data.set_block(local_x, height, local_z, Blocks.GRASS)
+			if height < Const.SEA_LEVEL:
+				for y: int in range(height + 1, Const.SEA_LEVEL + 1):
+					data.set_block(local_x, y, local_z, Blocks.WATER)
 	data.generated = true
 	data.modified = false
 	return data

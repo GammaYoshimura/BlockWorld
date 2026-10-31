@@ -16,9 +16,9 @@ La carpeta `.godot/` es caché local y está excluida de Git. Godot la recrea al
 
 ## Estado actual
 
-- Fases 1, 2 y 3 completadas hasta M3.12; M4.01–M4.04 también están completos.
-- El mundo que se muestra desde `main.tscn` usa una cuadrícula fija de 5×5 chunks de terreno procedural y solo malla los 9 chunks interiores (48×48 bloques). Aún faltan agua, árboles, cuevas y carga dinámica.
-- Siguiente hito según el plan: **M4.05 — Agua** en `docs/BW_05_FASE_4_terreno.md`.
+- Fases 1, 2 y 3 completadas hasta M3.12; M4.01–M4.05 también están completos.
+- El mundo que se muestra desde `main.tscn` usa una cuadrícula fija de 5×5 chunks de terreno procedural y solo malla los 9 chunks interiores (48×48 bloques). Los bloques de agua ya se generan, pero aún falta su material visual; también faltan árboles, cuevas y carga dinámica.
+- Siguiente hito según el plan: **M4.06 — Mallado del agua** en `docs/BW_05_FASE_4_terreno.md`.
 - El usuario informa que la ventana del juego se ve gris. Aunque los tests de asignación de atlas/UV pasaron antes, **la visualización con textura no está confirmada para el usuario**. No afirmar que el terreno aparece texturizado hasta resolverlo y comprobarlo de verdad.
 - El runner acumulado pasó sus comprobaciones hasta M4.01 después de los cambios de rendimiento. Aparecen tres `push_error` deliberados de M2.03 al comprobar accesos inválidos; no hubo fallos de test. La escena principal también arranca sin errores en la salida del Godot MCP.
 
@@ -41,7 +41,7 @@ Los documentos de fases describen el diseño previsto; `BW_02_PROGRESS.md` y el 
 
 ## Continuación recomendada
 
-1. Retomar por M4.01 según `docs/BW_05_FASE_4_terreno.md`.
+1. Retomar por M4.06 según `docs/BW_05_FASE_4_terreno.md`.
 2. Mantener `docs/BW_02_PROGRESS.md` actualizado.
 3. Usar Godot MCP para ejecutar el juego o el runner en este equipo si las teclas F no están disponibles.
 4. No cerrar el problema visual de la pantalla gris hasta comprobar las texturas en la ventana real.

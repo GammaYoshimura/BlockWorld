@@ -56,6 +56,8 @@ func _ready() -> void:
 	_test_height_map()
 	_current_milestone = "M4.04"
 	_test_terrain_layers()
+	_current_milestone = "M4.05"
+	_test_water_generation()
 
 func _test_world_to_chunk_and_local() -> void:
 	for test_case: Vector3i in COORD_CASES:
@@ -454,7 +456,8 @@ func _test_terrain_layers() -> void:
 						if data.get_block(local_x, y, local_z) != expected_block:
 							all_columns_valid = false
 					for y: int in range(height + 1, Const.CHUNK_HEIGHT):
-						if data.get_block(local_x, y, local_z) != Blocks.AIR:
+						var expected_above: int = Blocks.WATER if height < Const.SEA_LEVEL and y <= Const.SEA_LEVEL else Blocks.AIR
+						if data.get_block(local_x, y, local_z) != expected_above:
 							all_columns_valid = false
 					if is_beach:
 						for y: int in range(height - 2, height):
@@ -465,9 +468,32 @@ func _test_terrain_layers() -> void:
 	_check(found_grass, "3x3 terrain incluye columnas de césped")
 	_check(not generator.generate(0, 0).modified, "chunk generado no queda marcado como modificado por el usuario")
 
+func _test_water_generation() -> void:
+	var generator: WorldGenerator = WorldGenerator.new(12345)
+	var found_sea_minus_three: bool = false
+	for cz: int in range(-8, 8):
+		for cx: int in range(-8, 8):
+			var data: ChunkData = generator.generate(cx, cz)
+			for local_z: int in range(Const.CHUNK_SIZE):
+				for local_x: int in range(Const.CHUNK_SIZE):
+					var wx: int = cx * Const.CHUNK_SIZE + local_x
+					var wz: int = cz * Const.CHUNK_SIZE + local_z
+					if generator.height_at(wx, wz) == Const.SEA_LEVEL - 3:
+						found_sea_minus_three = true
+						for y: int in range(Const.SEA_LEVEL - 2, Const.SEA_LEVEL + 1):
+							if data.get_block(local_x, y, local_z) != Blocks.WATER:
+								found_sea_minus_three = false
+						_check(data.get_block(local_x, Const.SEA_LEVEL + 1, local_z) == Blocks.AIR, "agua deja el bloque sobre SEA_LEVEL en aire")
+						break
+				if found_sea_minus_three:
+					break
+			if found_sea_minus_three:
+				break
+	_check(found_sea_minus_three, "columna con h=SEA_LEVEL-3 se rellena hasta el nivel del mar")
+
 @warning_ignore("shadowed_variable_base_class")
 func _check(cond: bool, name: String) -> void:
 	if cond:
-		print("PASS ", _current_milestone, " ", name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11 # DEBUG-M4.01 # DEBUG-M4.02 # DEBUG-M4.03 # DEBUG-M4.04
+		print("PASS ", _current_milestone, " ", name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11 # DEBUG-M4.01 # DEBUG-M4.02 # DEBUG-M4.03 # DEBUG-M4.04 # DEBUG-M4.05
 	else:
-		push_error("FAIL " + _current_milestone + " " + name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11 # DEBUG-M4.01 # DEBUG-M4.02 # DEBUG-M4.03 # DEBUG-M4.04
+		push_error("FAIL " + _current_milestone + " " + name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11 # DEBUG-M4.01 # DEBUG-M4.02 # DEBUG-M4.03 # DEBUG-M4.04 # DEBUG-M4.05
