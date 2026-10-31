@@ -33,6 +33,9 @@ func _ready() -> void:
 	_player.set_physics_process(false)
 	_player.head.rotation.x = -0.12
 	_camera = _player.get_camera()
+	_camera.fov = 70.0
+	_camera.near = 0.05
+	_camera.far = float((Const.DEFAULT_RENDER_DISTANCE + 2) * Const.CHUNK_SIZE)
 	_world.stream_target = _camera
 
 	var debug_layer: CanvasLayer = CanvasLayer.new()
@@ -71,7 +74,7 @@ func _process(_delta: float) -> void:
 func _update_debug_label() -> void:
 	var camera_position: Vector3 = _camera.global_position
 	var horizontal_speed: float = Vector2(_player.velocity.x, _player.velocity.z).length()
-	_debug_label.text = "FPS: %d\nMesh: %s ms\nChunks: %d data / %d mesh\nCollision chunks: %d\nFloor: %s (vy %s)\nSpeed: %s / Step: %s\nPos: %s, %s, %s" % [
+	_debug_label.text = "FPS: %d\nMesh: %s ms\nChunks: %d data / %d mesh\nCollision chunks: %d\nFloor: %s (vy %s)\nSpeed: %s / Fly: %s / Step: %s\nPos: %s, %s, %s" % [
 		Engine.get_frames_per_second(),
 		String.num(_mesh_build_ms, 2),
 		_world.chunks.size(),
@@ -80,6 +83,7 @@ func _update_debug_label() -> void:
 		str(_player.is_on_floor()),
 		String.num(_player.velocity.y, 2),
 		String.num(horizontal_speed, 2),
+		str(_player.is_flying),
 		_player.auto_step_status,
 		String.num(camera_position.x, 2),
 		String.num(camera_position.y, 2),

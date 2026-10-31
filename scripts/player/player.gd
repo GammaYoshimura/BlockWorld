@@ -5,8 +5,20 @@ var head: Node3D
 var camera: Camera3D
 var _body_collision: CollisionShape3D
 var auto_step_status: String = "esperando pared"
+var is_flying: bool = false
+var spawn_position: Vector3 = Vector3.ZERO
 
 func _physics_process(delta: float) -> void:
+	if Input.is_action_just_pressed(&"toggle_fly"):
+		is_flying = not is_flying
+		if is_flying:
+			velocity.y = 0.0
+	if global_position.y < -20.0:
+		respawn()
+		return
+	if is_flying:
+		_process_flight(delta)
+		return
 	var input_direction: Vector2 = Input.get_vector(
 		&"move_left",
 		&"move_right",
@@ -93,6 +105,30 @@ func _can_auto_jump_over_step(direction: Vector3) -> bool:
 	auto_step_status = "obstáculo %.2f" % step_rise
 	return true
 
+func _process_flight(delta: float) -> void:
+	var input_direction: Vector2 = Input.get_vector(
+		&"move_left",
+		&"move_right",
+		&"move_forward",
+		&"move_back"
+	)
+	var local_direction: Vector3 = Vector3(input_direction.x, 0.0, input_direction.y)
+	var flight_direction: Vector3 = (transform.basis * local_direction).normalized()
+	var vertical_direction: float = 0.0
+	if Input.is_action_pressed(&"jump"):
+		vertical_direction += 1.0
+	if Input.is_action_pressed(&"sneak"):
+		vertical_direction -= 1.0
+	var motion: Vector3 = flight_direction * Const.FLY_SPEED
+	motion.y = vertical_direction * Const.FLY_SPEED
+	velocity = velocity.move_toward(motion, 60.0 * delta)
+	move_and_slide()
+
+func respawn() -> void:
+	global_position = spawn_position
+	velocity = Vector3.ZERO
+	is_flying = false
+
 func _ready() -> void:
 	collision_layer = 2
 	collision_mask = 1
@@ -113,7 +149,10 @@ func _ready() -> void:
 
 	camera = Camera3D.new()
 	camera.name = "Camera3D"
+	camera.fov = 70.0
+	camera.near = 0.05
 	head.add_child(camera)
+	spawn_position = global_position
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 func _unhandled_input(event: InputEvent) -> void:

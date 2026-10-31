@@ -56,11 +56,11 @@ Fecha última actualización: 2026-10-31
 - [x] M5.04 — Gravedad `32 m/s²` limitada a `-60`, velocidad vertical descendente anulada al tocar suelo.
 - [x] M5.05 — Cada chunk crea `StaticBody3D` con trimesh de la malla sólida (agua excluida), colisión por ambos lados y colisión activa dentro de `COLLISION_RADIUS`; el usuario confirmó que ya no cae.
 - [x] M5.06 — Salto de 1.27 bloques y auto-salto hacia delante hasta un bloque; usuario confirmó que funciona con trayectoria fluida.
-- [ ] M5.07 — Sprint (5.6 solo avanzando) y agacharse (1.3), con caminar a 4.3. El overlay muestra la velocidad horizontal para comprobarlo.
+- [x] M5.07 — Ctrl + avanzar acelera a 5.6; Shift reduce a 1.3; caminar mantiene 4.3. Usuario confirmó ambas velocidades.
 - [x] M5.08 — Aparece sobre `height_at(0,0)` y mantiene la física desactivada hasta tener colisiones en radio 2; muestra «Generando mundo…» durante la carga. Implementado junto con M5.05 para evitar caídas durante el inicio.
-- [ ] M5.09 — Modo vuelo.
-- [ ] M5.10 — Reaparición.
-- [ ] M5.11 — Cámara.
+- [ ] M5.09 — Vuelo con F: sin gravedad, velocidad `FLY_SPEED`, Espacio sube y Shift baja; conserva `move_and_slide()` y colisión. Pendiente confirmación en juego.
+- [ ] M5.10 — Al caer bajo Y=-20 reaparece en el spawn y se anula la velocidad; implementación lista, falta comprobar recuperación.
+- [x] M5.11 — Cámara con `fov=70`, `near=0.05` y `far=(render_distance+2)*CHUNK_SIZE`.
 
 ## Desviaciones del contrato (si las hay, aprobadas por el humano)
 - M1.04: el criterio menciona 25 acciones, pero la lista de la sección 3.7 enumera 24; se implementaron las 24 enumeradas, sin inventar una acción.
@@ -68,7 +68,7 @@ Fecha última actualización: 2026-10-31
 ## Archivos existentes (ruta · propósito · último milestone que lo tocó)
 - `res://project.godot` · configuración, escena principal y autoloads `GameSettings`/`InputSetup` · M4.11
 - `res://scenes/main.tscn` · escena raíz `Main` (Node3D) con script `main.gd` · M1.02
-- `res://scripts/main.gd` · crea entorno, jugador con spawn gating y overlay de estado · M5.08
+- `res://scripts/main.gd` · crea entorno, jugador con spawn gating, cámara configurada y overlay de estado · M5.11
 - `res://scripts/util/fly_camera.gd` · cámara libre temporal sobre `Camera3D` · M1.08
 - `res://scripts/autoload/game_settings.gd` · semilla de mundo persistente para la sesión · M4.11
 - `res://scripts/autoload/input_setup.gd` · registro de acciones de entrada y comprobación temporal · M1.04
@@ -85,7 +85,7 @@ Fecha última actualización: 2026-10-31
 - `res://scripts/world/world.gd` · streaming, colisiones cercanas, espera de colisiones para spawn y semilla de `GameSettings` · M5.08
 - `res://scripts/world/voxel_raycast.gd` · clase `VoxelRaycast` · M1.02
 - `res://scripts/world/save_manager.gd` · clase `SaveManager` · M1.02
-- `res://scripts/player/player.gd` · jugador con cámara, movimiento horizontal y gravedad · M5.04
+- `res://scripts/player/player.gd` · jugador con movimiento, salto, vuelo, respawn y cámara · M5.10
 - `res://scripts/player/block_interaction.gd` · clase `BlockInteraction` · M1.02
 - `res://scripts/player/block_highlight.gd` · clase `BlockHighlight` · M1.02
 - `res://scripts/ui/hud.gd` · clase `Hud` · M1.02
