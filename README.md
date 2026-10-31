@@ -18,7 +18,7 @@ La carpeta `.godot/` es caché local y está excluida de Git. Godot la recrea al
 
 - Fases 1–4 completas; Fase 5 implementada salvo la comprobación del respawn tras una caída. El usuario confirmó salto, auto-salto, sprint, agacharse y vuelo. El spawn inicial y el respawn buscan una columna despejada y esperan colisiones cercanas antes de activar física. Más adelante, el vuelo quedará limitado a modo creativo u objetos especiales.
 - El mundo de `main.tscn` carga terreno procedural alrededor de la cámara del jugador. Genera como máximo un chunk de datos y una malla por frame; descarga chunks a distancia y conserva los modificados en memoria. Incluye agua, árboles, cuevas y semilla de sesión.
-- Fase 6: M6.01–M6.06 confirmados y M6.09 implementado. Pick block y repetición al mantener clic añadidos; falta comprobarlos. Fase 7: M7.01 mira, M7.02 hotbar visual, M7.03 overlay F3 ampliado y M7.04 menú de pausa añadidos; pendiente confirmación de uso del menú.
+- Fase 6: M6.01–M6.06 confirmados y M6.09 implementado. Pick block y repetición al mantener clic añadidos; falta comprobarlos. Fase 7: M7.01 mira, M7.02 hotbar visual, M7.03 overlay F3, M7.04 pausa y M7.05 menú inicial con semilla implementados; pendientes de confirmación de uso.
 - Las hojas usan transparencia recortada con un patrón pseudoaleatorio mezclado para evitar artefactos diagonales repetitivos.
 - La escena principal arranca sin errores en la salida del Godot MCP. El jugador no activa la física hasta que las colisiones cercanas están listas. La colocación de bloques permite contacto exacto bajo los pies para apilar; falta confirmar en juego el caso de saltar, colocar y aterrizar sobre ese bloque.
 

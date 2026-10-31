@@ -78,7 +78,7 @@ Fecha última actualización: 2026-10-31
 - [x] M7.02 — Hotbar inferior con 9 slots, texturas del atlas muestreadas con nearest, borde visible para el seleccionado y actualización al cambiar selección o contenido (pick block). La ventana real muestra la barra; falta confirmación del usuario.
 - [x] M7.03 — Overlay F3 incluye FPS y ms/frame, XYZ y bloque, chunk, dirección cardinal, bloque apuntado, conteos de chunks y colisiones, colas de datos/mallas/remallado, último tiempo de mallado y semilla.
 - [x] M7.04 — Esc pausa el árbol de juego, libera el ratón y muestra Continuar/Salir; Esc o Continuar reanuda y captura el ratón. Falta confirmación de uso en juego.
-- [ ] M7.05 — Menú principal y semilla prevista.
+- [x] M7.05 — Menú inicial con semilla opcional; vacío elige una semilla aleatoria persistente en sesión. «Nuevo mundo» entra en la escena principal; «Salir» cierra la aplicación. Falta confirmación de uso en juego.
 - [ ] M7.06 — Slider de distancia de renderizado previsto.
 
 ## Desviaciones del contrato (si las hay, aprobadas por el humano)
@@ -87,6 +87,7 @@ Fecha última actualización: 2026-10-31
 ## Archivos existentes (ruta · propósito · último milestone que lo tocó)
 - `res://project.godot` · configuración, escena principal y autoloads `GameSettings`/`InputSetup` · M4.11
 - `res://scenes/main.tscn` · escena raíz `Main` (Node3D) con script `main.gd` · M1.02
+- `res://scenes/main_menu.tscn` · menú inicial con semilla y acceso al mundo · M7.05
 - `res://scripts/main.gd` · crea entorno, jugador con spawn gating y overlay F3 completo · M7.03
 - `res://scripts/util/fly_camera.gd` · cámara libre temporal sobre `Camera3D` · M1.08
 - `res://scripts/autoload/game_settings.gd` · semilla de mundo persistente para la sesión · M4.11
@@ -109,6 +110,7 @@ Fecha última actualización: 2026-10-31
 - `res://scripts/player/block_interaction.gd` · rompe bloque apuntado con clic izquierdo · M6.03
 - `res://scripts/ui/crosshair.gd` · mira centrada con contorno · M7.01
 - `res://scripts/ui/pause_menu.gd` · menú de pausa procesado aunque el árbol esté pausado · M7.04
+- `res://scripts/ui/main_menu.gd` · menú de inicio con semilla opcional · M7.05
 - `res://scripts/world/voxel_raycast.gd` · raycast voxel DDA · M6.01
 - `res://scripts/player/block_interaction.gd` · clase `BlockInteraction` · M1.02
 - `res://scripts/player/block_highlight.gd` · clase `BlockHighlight` · M1.02
