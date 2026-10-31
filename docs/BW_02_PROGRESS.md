@@ -45,6 +45,8 @@ Fecha última actualización: 2026-10-31
 - [x] M4.06 — Material de agua azul, semitransparente, unshaded y compartido en `WaterMesh`; pruebas PASS para 6 caras aisladas, 10 en dos bloques contiguos, 5 con piedra debajo y configuración del material.
 - [x] M4.07 — Árboles deterministas con hash entero propio por semilla/coordenadas, troncos de 4–6 bloques y copa de cuatro capas. Pruebas PASS: orden de generación, presencia de troncos y cada hoja del 3×3 a Chebyshev ≤3 de un tronco (el barrido usa una corona de chunks para verificar árboles que cruzan bordes).
 - [x] M4.08 — Ruido FastNoiseLite 3D a frecuencia 0.05 y semilla `world_seed + 1` talla aire en `5 <= y < h-4`; el barrido 3×3 encontró cuevas y verificó que bedrock/superficie permanecen intactos.
+- [x] M4.09 — Carga dinámica síncrona centrada en la cámara: radio `render_distance+1` para datos y `render_distance` para meshes, colas ordenadas por distancia y máximo 1 chunk de datos + 1 mesh por frame. Pruebas con distancia 2: 29 datos, 13 mallas, centro primero, sin duplicados.
+- [x] M4.10 — Descarga más allá de `render_distance+UNLOAD_MARGIN`; los datos modificados pasan a `modified_chunks` y se restauran al volver. Pruebas recorrieron ~300 bloques: datos/nodos acotados y sincronizados.
 - [ ] M4.06 — Mallado del agua.
 - [ ] M4.07 — Árboles deterministas.
 - [ ] M4.08 — Cuevas.
@@ -58,7 +60,7 @@ Fecha última actualización: 2026-10-31
 ## Archivos existentes (ruta · propósito · último milestone que lo tocó)
 - `res://project.godot` · configuración, escena principal y autoload `InputSetup` · M1.04
 - `res://scenes/main.tscn` · escena raíz `Main` (Node3D) con script `main.gd` · M1.02
-- `res://scripts/main.gd` · crea luz direccional, entorno, cámara, mundo 5×5 con malla en los 9 chunks interiores y etiqueta de depuración · M4.01
+- `res://scripts/main.gd` · crea luz direccional, entorno, cámara libre como objetivo de streaming y etiqueta de depuración · M4.09
 - `res://scripts/util/fly_camera.gd` · cámara libre temporal sobre `Camera3D` · M1.08
 - `res://scripts/autoload/game_settings.gd` · base de autoload (`extends Node`) · M1.02
 - `res://scripts/autoload/input_setup.gd` · registro de acciones de entrada y comprobación temporal · M1.04
@@ -72,7 +74,7 @@ Fecha última actualización: 2026-10-31
 - `res://scripts/world/chunk_mesher.gd` · clase `ChunkMesher` optimizada para acceso directo a bytes y caras expuestas · M3.12
 - `res://scripts/world/world_generator.gd` · `WorldGenerator(world_seed)`, mapa de alturas, capas, agua, árboles y cuevas deterministas · M4.08
 - `res://scripts/world/chunk.gd` · nodo `Chunk` con `SolidMesh`, `WaterMesh`, `apply_mesh`, AABB y materiales compartidos · M4.06
-- `res://scripts/world/world.gd` · gestor de datos y nodos de chunk con remallado condicionado por vecinos; usa `WorldGenerator` · M4.04
+- `res://scripts/world/world.gd` · carga dinámica priorizada, mallas condicionadas por vecinos y descarga con histéresis · M4.10
 - `res://scripts/world/voxel_raycast.gd` · clase `VoxelRaycast` · M1.02
 - `res://scripts/world/save_manager.gd` · clase `SaveManager` · M1.02
 - `res://scripts/player/player.gd` · clase `Player` · M1.02
@@ -84,7 +86,7 @@ Fecha última actualización: 2026-10-31
 - `res://scripts/ui/pause_menu.gd` · clase `PauseMenu` · M1.02
 - `res://scripts/ui/main_menu.gd` · clase `MainMenu` · M1.02
 - `res://tests/test_runner.tscn` · escena `Node` del runner · M1.02
-- `res://tests/test_runner.gd` · runner con casos de M1.06, M2.01 a M2.05, M3.02, M3.04, M3.05, M3.07 a M3.11 y M4.01 a M4.08 · M4.08
+- `res://tests/test_runner.gd` · runner con casos de M1.06, M2.01 a M2.05, M3.02, M3.04, M3.05, M3.07 a M3.11 y M4.01 a M4.10 · M4.10
 - `res://.gitignore` · exclusión de `.godot/` · proyecto base
 - `res://icon.svg` · icono del proyecto · proyecto base
 

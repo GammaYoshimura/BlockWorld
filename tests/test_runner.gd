@@ -64,6 +64,10 @@ func _ready() -> void:
 	_test_deterministic_trees()
 	_current_milestone = "M4.08"
 	_test_caves()
+	_current_milestone = "M4.09"
+	_test_dynamic_chunk_streaming()
+	_current_milestone = "M4.10"
+	await _test_dynamic_chunk_unloading()
 
 func _test_world_to_chunk_and_local() -> void:
 	for test_case: Vector3i in COORD_CASES:
@@ -608,9 +612,59 @@ func _test_caves() -> void:
 	_check(cave_voxel_count > 0, "ruido 3D talla cuevas en el barrido 3x3")
 	_check(caves_are_below_surface_and_above_bedrock, "cuevas dejan bedrock y superficie intactos")
 
+func _test_dynamic_chunk_streaming() -> void:
+	var world: World = World.new(12345)
+	world.set_render_distance(2)
+	add_child(world)
+	var per_frame_limits_respected: bool = true
+	for frame: int in range(90):
+		var data_count_before: int = world.chunks.size()
+		var mesh_count_before: int = world.get_meshed_chunk_count()
+		world.update_streaming(Vector3.ZERO)
+		if world.chunks.size() - data_count_before > 1:
+			per_frame_limits_respected = false
+		if world.get_meshed_chunk_count() - mesh_count_before > 1:
+			per_frame_limits_respected = false
+	_check(per_frame_limits_respected, "streaming genera como máximo un chunk de datos y una malla por frame")
+	_check(world.chunks.size() == 29, "render distance 2 solicita datos en radio 3")
+	_check(world.get_meshed_chunk_count() == 13, "render distance 2 malla en radio 2")
+	_check(world.chunks.has(Vector2i.ZERO), "streaming prioriza el chunk central")
+	_check(world.get_child_count() == world.chunks.size(), "streaming no duplica nodos Chunk")
+	world.free()
+
+func _test_dynamic_chunk_unloading() -> void:
+	var world: World = World.new(12345)
+	world.set_render_distance(2)
+	add_child(world)
+	var edited_data: ChunkData = world.ensure_chunk(-10, 0)
+	edited_data.set_block(1, Const.CHUNK_HEIGHT - 1, 1, Blocks.STONE)
+	var retained_center_data: ChunkData = world.ensure_chunk(0, 0)
+	world.update_streaming(Vector3.ZERO)
+	await get_tree().process_frame
+	_check(not world.chunks.has(Vector2i(-10, 0)), "chunk distante se descarga al superar render_distance + margen")
+	_check(world.modified_chunks.size() == 1 and world.modified_chunks[0] == edited_data, "chunk modificado se conserva en memoria")
+	_check(world.chunks.has(Vector2i.ZERO) and world.chunks[Vector2i.ZERO] == retained_center_data, "chunk cercano se mantiene cargado")
+	_check(world.get_child_count() == world.chunk_nodes.size(), "nodos descargados salen del árbol de escena")
+
+	world.update_streaming(Vector3(-10.0 * Const.CHUNK_SIZE, 0.0, 0.0))
+	await get_tree().process_frame
+	_check(world.chunks.get(Vector2i(-10, 0)) == edited_data, "chunk modificado se restaura al volver a su coordenada")
+	_check(edited_data.get_block(1, Const.CHUNK_HEIGHT - 1, 1) == Blocks.STONE, "bloque editado sobrevive a descarga y recarga")
+	_check(world.modified_chunks.is_empty(), "chunk restaurado sale de la lista de modificados descargados")
+
+	var maximum_loaded_count: int = world.chunks.size()
+	for center_x: int in range(0, 20):
+		world.update_streaming(Vector3(float(center_x * Const.CHUNK_SIZE), 0.0, 0.0))
+		await get_tree().process_frame
+		maximum_loaded_count = maxi(maximum_loaded_count, world.chunks.size())
+	_check(maximum_loaded_count <= 49, "carga y descarga mantienen acotado el número de chunks al recorrer 300 bloques")
+	_check(world.chunks.size() <= 49, "número de chunks se estabiliza tras recorrer 300 bloques")
+	_check(world.get_child_count() == world.chunk_nodes.size(), "número de nodos Chunk se mantiene sincronizado")
+	world.free()
+
 @warning_ignore("shadowed_variable_base_class")
 func _check(cond: bool, name: String) -> void:
 	if cond:
-		print("PASS ", _current_milestone, " ", name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11 # DEBUG-M4.01 # DEBUG-M4.02 # DEBUG-M4.03 # DEBUG-M4.04 # DEBUG-M4.05 # DEBUG-M4.06 # DEBUG-M4.07 # DEBUG-M4.08
+		print("PASS ", _current_milestone, " ", name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11 # DEBUG-M4.01 # DEBUG-M4.02 # DEBUG-M4.03 # DEBUG-M4.04 # DEBUG-M4.05 # DEBUG-M4.06 # DEBUG-M4.07 # DEBUG-M4.08 # DEBUG-M4.09 # DEBUG-M4.10
 	else:
-		push_error("FAIL " + _current_milestone + " " + name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11 # DEBUG-M4.01 # DEBUG-M4.02 # DEBUG-M4.03 # DEBUG-M4.04 # DEBUG-M4.05 # DEBUG-M4.06 # DEBUG-M4.07 # DEBUG-M4.08
+		push_error("FAIL " + _current_milestone + " " + name) # DEBUG-M1.06 # DEBUG-M2.01 # DEBUG-M2.02 # DEBUG-M2.03 # DEBUG-M2.04 # DEBUG-M2.05 # DEBUG-M3.02 # DEBUG-M3.04 # DEBUG-M3.05 # DEBUG-M3.07 # DEBUG-M3.08 # DEBUG-M3.09 # DEBUG-M3.10 # DEBUG-M3.11 # DEBUG-M4.01 # DEBUG-M4.02 # DEBUG-M4.03 # DEBUG-M4.04 # DEBUG-M4.05 # DEBUG-M4.06 # DEBUG-M4.07 # DEBUG-M4.08 # DEBUG-M4.09 # DEBUG-M4.10

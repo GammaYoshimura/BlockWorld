@@ -1,9 +1,7 @@
 extends Node3D
 
-const TEST_CHUNK_MIN_COORD: int = -2
-const TEST_CHUNK_MAX_COORD: int = 2
-
 var _camera: Camera3D
+var _world: World
 var _debug_label: Label
 var _mesh_build_ms: float = 0.0
 
@@ -29,7 +27,7 @@ func _ready() -> void:
 	add_child(camera)
 	_camera = camera
 
-	_build_test_world()
+	_build_streamed_world()
 
 	var debug_layer: CanvasLayer = CanvasLayer.new()
 	_debug_label = Label.new()
@@ -39,27 +37,16 @@ func _ready() -> void:
 	add_child(debug_layer)
 	_update_debug_label()
 
-func _build_test_world() -> void:
-	var world: World = World.new()
-	world.name = "World"
-	add_child(world)
-	var total_mesh_time_usec: int = 0
-	var mesh_build_count: int = 0
-	for chunk_z: int in range(TEST_CHUNK_MIN_COORD, TEST_CHUNK_MAX_COORD + 1):
-		for chunk_x: int in range(TEST_CHUNK_MIN_COORD, TEST_CHUNK_MAX_COORD + 1):
-			world.ensure_chunk(chunk_x, chunk_z)
-
-	for chunk_z: int in range(TEST_CHUNK_MIN_COORD, TEST_CHUNK_MAX_COORD + 1):
-		for chunk_x: int in range(TEST_CHUNK_MIN_COORD, TEST_CHUNK_MAX_COORD + 1):
-			var coord: Vector2i = Vector2i(chunk_x, chunk_z)
-			if world.remesh(coord):
-				total_mesh_time_usec += world.last_mesh_build_usec
-				mesh_build_count += 1
-
-	if mesh_build_count > 0:
-		_mesh_build_ms = float(total_mesh_time_usec) / float(mesh_build_count) / 1000.0
+func _build_streamed_world() -> void:
+	_world = World.new()
+	_world.name = "World"
+	_world.set_render_distance(Const.DEFAULT_RENDER_DISTANCE)
+	_world.stream_target = _camera
+	add_child(_world)
 
 func _process(_delta: float) -> void:
+	if _world != null and _world.last_mesh_build_usec > 0:
+		_mesh_build_ms = float(_world.last_mesh_build_usec) / 1000.0
 	if Input.is_action_just_pressed(&"toggle_debug"):
 		_debug_label.visible = not _debug_label.visible
 	if _debug_label.visible:
@@ -67,9 +54,11 @@ func _process(_delta: float) -> void:
 
 func _update_debug_label() -> void:
 	var camera_position: Vector3 = _camera.global_position
-	_debug_label.text = "FPS: %d\nMesh: %s ms\nPos: %s, %s, %s" % [
+	_debug_label.text = "FPS: %d\nMesh: %s ms\nChunks: %d data / %d mesh\nPos: %s, %s, %s" % [
 		Engine.get_frames_per_second(),
 		String.num(_mesh_build_ms, 2),
+		_world.chunks.size(),
+		_world.get_meshed_chunk_count(),
 		String.num(camera_position.x, 2),
 		String.num(camera_position.y, 2),
 		String.num(camera_position.z, 2)
