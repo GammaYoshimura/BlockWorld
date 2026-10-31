@@ -93,12 +93,12 @@ func _build_mesh_info(coord: Vector2i) -> Dictionary:
 	}
 
 func update_streaming(world_position: Vector3) -> void:
-	_process_generation_results()
-	_process_mesh_results()
 	var center_chunk: Vector2i = Coords.world_to_chunk(floori(world_position.x), floori(world_position.z))
 	if center_chunk != _stream_center_chunk:
 		_unload_distant_chunks(center_chunk)
 		_refresh_streaming_queues(center_chunk)
+	_process_generation_results()
+	_process_mesh_results()
 	_process_one_data_chunk()
 	_process_one_mesh_chunk()
 	_update_collision_range(center_chunk)
@@ -200,10 +200,19 @@ func _process_generation_results() -> void:
 	var results: Array = _generation_results.call("pop_all")
 	for result_variant: Variant in results:
 		var result: Dictionary = result_variant as Dictionary
-		_register_chunk_data(result["data"] as ChunkData)
+		var data: ChunkData = result["data"] as ChunkData
+		if _is_in_data_range(data.coord):
+			_register_chunk_data(data)
 
 func _is_generation_active(coord: Vector2i) -> bool:
 	return _generation_tasks.values().has(coord)
+
+func _is_in_data_range(coord: Vector2i) -> bool:
+	var radius: int = render_distance + 1
+	return (coord - _stream_center_chunk).length_squared() <= radius * radius
+
+func _is_in_mesh_range(coord: Vector2i) -> bool:
+	return (coord - _stream_center_chunk).length_squared() <= render_distance * render_distance
 
 func _process_one_mesh_chunk() -> void:
 	if _mesh_queue.is_empty():
@@ -289,6 +298,10 @@ func _process_mesh_results() -> void:
 	for result_variant: Variant in results:
 		var result: Dictionary = result_variant as Dictionary
 		var coord: Vector2i = result["coord"] as Vector2i
+		if not _is_in_mesh_range(coord):
+			if result["purpose"] == "dirty":
+				_pending_dirty_meshes.erase(coord)
+			continue
 		if not _mesh_versions_match(result["versions"] as Dictionary):
 			if result["purpose"] == "dirty":
 				_pending_dirty_meshes.erase(coord)
@@ -322,6 +335,8 @@ func _unload_distant_chunks(center_chunk: Vector2i) -> void:
 		var chunk_node: Chunk = chunk_nodes.get(coord) as Chunk
 		if chunk_node != null:
 			chunk_node.queue_free()
+		_dirty_chunks.erase(coord)
+		_pending_dirty_meshes.erase(coord)
 		chunk_nodes.erase(coord)
 		chunks.erase(coord)
 		meshed_chunks.erase(coord)
@@ -376,6 +391,7 @@ func _mark_chunk_dirty(coord: Vector2i) -> void:
 func _process_one_dirty_chunk() -> void:
 	if _dirty_chunks.is_empty():
 		return
+	var dirty_in_range: Array[Vector2i] = []
 	for coord_variant: Variant in _dirty_chunks.keys():
 		var coord: Vector2i = coord_variant as Vector2i
 		var chunk_data: ChunkData = chunks.get(coord) as ChunkData
@@ -383,6 +399,9 @@ func _process_one_dirty_chunk() -> void:
 			_dirty_chunks.erase(coord)
 			_pending_dirty_meshes.erase(coord)
 			continue
+		if not _is_in_mesh_range(coord):
+			continue
+		dirty_in_range.append(coord)
 		if _pending_dirty_meshes.has(coord):
 			var pending: Dictionary = _pending_dirty_meshes[coord] as Dictionary
 			if _mesh_versions_match(pending["versions"] as Dictionary):
@@ -391,21 +410,21 @@ func _process_one_dirty_chunk() -> void:
 		if not _is_mesh_active(coord):
 			_schedule_mesh_task(coord, "dirty")
 
-	for coord_variant: Variant in _dirty_chunks.keys():
-		var coord: Vector2i = coord_variant as Vector2i
+	if dirty_in_range.is_empty():
+		return
+	for coord: Vector2i in dirty_in_range:
 		var pending: Dictionary = _pending_dirty_meshes.get(coord, {}) as Dictionary
 		if pending.is_empty() or not _mesh_versions_match(pending["versions"] as Dictionary):
 			return
 
-	for coord_variant: Variant in _dirty_chunks.keys():
-		var coord: Vector2i = coord_variant as Vector2i
+	for coord: Vector2i in dirty_in_range:
 		var chunk_node: Chunk = chunk_nodes.get(coord) as Chunk
 		if chunk_node == null:
 			continue
 		var pending: Dictionary = _pending_dirty_meshes[coord] as Dictionary
 		_apply_mesh_result(coord, pending)
-	_dirty_chunks.clear()
-	_pending_dirty_meshes.clear()
+		_dirty_chunks.erase(coord)
+		_pending_dirty_meshes.erase(coord)
 
 func get_chunk_data(c: Vector2i) -> ChunkData:
 	return chunks.get(c) as ChunkData

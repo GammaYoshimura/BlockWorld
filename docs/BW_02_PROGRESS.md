@@ -87,6 +87,7 @@ Fecha última actualización: 2026-10-31
 - [ ] M8.03 — Mallado programado en workers a partir de copias de `ChunkData` y vecinos. Se conserva `mesh_version` de todas las fuentes; el hilo principal descarta resultados obsoletos y aplica los builders válidos. Falta validar cambios rápidos durante la carga.
 - [ ] M8.04 — Presupuesto de aplicación de resultados de malla (1 mesh/frame o hasta 3 ms) pendiente.
 - [ ] M8.05 — Colisión trimesh solo en el radio de colisión y se conserva hasta `COLLISION_RADIUS + 1` antes de destruirse (histerésis); pendiente observar recuentos al desplazarse.
+- [ ] M8.06 — Las colas priorizan por distancia y descartan resultados al acabar fuera del radio actual; al descargar un chunk se limpian remallados diferidos. Falta validar el recorrido continuo de 10 s.
 
 ## Desviaciones del contrato (si las hay, aprobadas por el humano)
 - M1.04: el criterio menciona 25 acciones, pero la lista de la sección 3.7 enumera 24; se implementaron las 24 enumeradas, sin inventar una acción.
@@ -112,7 +113,7 @@ Fecha última actualización: 2026-10-31
 - `res://scripts/world/chunk_generation_task.gd` · worker estático para generar `ChunkData` sin tocar nodos o diccionarios de escena · M8.02
 - `res://scripts/world/chunk_mesh_task.gd` · worker estático para mallar snapshots de chunks · M8.03
 - `res://scripts/world/chunk.gd` · nodo `Chunk` con mallas y colisión trimesh opcional e histéresis de activación · M8.05
-- `res://scripts/world/world.gd` · streaming, generación y mallado en hilos, control de versiones, colisiones cercanas y spawn · M8.03
+- `res://scripts/world/world.gd` · streaming, generación/mallado en hilos, descarte fuera de rango, colisiones y spawn · M8.06
 - `res://scripts/world/voxel_raycast.gd` · clase `VoxelRaycast` · M1.02
 - `res://scripts/world/save_manager.gd` · clase `SaveManager` · M1.02
 - `res://scripts/player/player.gd` · jugador con movimiento, salto, vuelo, respawn y cámara · M5.10
