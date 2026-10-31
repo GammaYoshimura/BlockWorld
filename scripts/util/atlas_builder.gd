@@ -89,4 +89,8 @@ static func _varied_color(base: Color, x: int, y: int, tile: int, vary_alpha: bo
 	)
 
 static func _pixel_hash(x: int, y: int, tile: int) -> int:
-	return absi((x * 73856093) ^ (y * 19349663) ^ (tile * 83492791))
+	var hash_value: int = (x * 73856093) ^ (y * 19349663) ^ (tile * 83492791)
+	hash_value = hash_value ^ (hash_value >> 13)
+	hash_value *= 1274126177
+	hash_value = hash_value ^ (hash_value >> 16)
+	return absi(hash_value)
