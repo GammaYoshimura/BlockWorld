@@ -30,8 +30,8 @@
 - **Ojo:** crear la forma solo si el mesh no está vacío.
 
 ### M5.06 — Salto
-- **Hacer:** Con `jump` y `is_on_floor()`: `velocity.y = Const.JUMP_VELOCITY`.
-- **Hecho cuando:** imprimiendo la altura máxima alcanzada sobre el suelo da entre 1.2 y 1.3; sube un escalón de 1 bloque y **no** puede subir 2 bloques saltando.
+- **Hacer:** Con `jump` y `is_on_floor()`: `velocity.y = Const.JUMP_VELOCITY`. Al caminar contra un desnivel, subir automáticamente como máximo 1 bloque; no auto-subir 2.
+- **Hecho cuando:** imprimiendo la altura máxima alcanzada sobre el suelo da entre 1.2 y 1.3; sube automáticamente un escalón de 1 bloque, **no** sube automáticamente 2 y el salto tampoco alcanza 2 bloques.
 
 ### M5.07 — Sprint y agacharse
 - **Hacer:** `sprint` → `SPRINT_SPEED` solo si va hacia delante; `sneak` → `SNEAK_SPEED`. Solo cambia la velocidad (el "no caer por bordes" es opcional, Fase 11).
