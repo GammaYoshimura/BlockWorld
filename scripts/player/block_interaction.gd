@@ -80,7 +80,16 @@ func _intersects_player(block: Vector3i) -> bool:
 		Vector3(Const.PLAYER_WIDTH, Const.PLAYER_HEIGHT, Const.PLAYER_WIDTH)
 	)
 	var block_bounds: AABB = AABB(Vector3(block), Vector3.ONE)
-	return player_bounds.intersects(block_bounds, true)
+	var player_end: Vector3 = player_bounds.end
+	var block_end: Vector3 = block_bounds.end
+	return (
+		player_bounds.position.x <= block_end.x
+		and player_end.x >= block_bounds.position.x
+		and player_bounds.position.y <= block_end.y
+		and player_end.y >= block_bounds.position.y
+		and player_bounds.position.z <= block_end.z
+		and player_end.z >= block_bounds.position.z
+	)
 
 func _select_slot(slot_index: int) -> void:
 	selected = posmod(slot_index, slots.size())
