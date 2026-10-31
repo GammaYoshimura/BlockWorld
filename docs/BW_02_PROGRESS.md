@@ -66,9 +66,9 @@ Fecha última actualización: 2026-10-31
 - [x] M6.01 — `VoxelRaycast.cast` con DDA (Amanatides & Woo), coordenadas negativas y omisión de AIR/WATER; el contorno visual confirmado por el usuario verifica el raycast en escena.
 - [x] M6.02 — Resaltado de bloque apuntado con cubo de aristas ±0.002 y alcance `PLAYER_REACH`; usuario confirmó que funciona.
 - [x] M6.03 — Clic izquierdo rompe el bloque apuntado salvo bedrock; usuario confirmó que rompe y actualiza el contorno.
-- [ ] M6.04 — Chunk editado y vecinos en bordes se remallan con mallas preparadas en frames separados y aplicación atómica en un único frame, evitando mostrar estados intermedios. Falta confirmar si desapareció el parpadeo.
-- [ ] M6.05 — Colocar bloque.
-- [ ] M6.06 — Lógica de hotbar.
+- [x] M6.04 — Chunks editados y vecinos en bordes se remallan preparando mallas por separado y aplicándolas atómicamente; usuario confirmó que funciona.
+- [ ] M6.05 — Clic derecho coloca el bloque seleccionado en `prev` si y está en rango, la celda es AIR/WATER y su AABB no intersecta al jugador.
+- [ ] M6.06 — Hotbar lógica de 9 slots según contrato; rueda y teclas 1–9 cambian selección, overlay muestra slot/id.
 - [ ] M6.07 — Pick block.
 - [ ] M6.08 — Repetición al mantener.
 - [ ] M6.09 — Ediciones sobreviven a descarga.

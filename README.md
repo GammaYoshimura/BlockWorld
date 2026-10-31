@@ -18,7 +18,7 @@ La carpeta `.godot/` es caché local y está excluida de Git. Godot la recrea al
 
 - Fases 1–4 completas; Fase 5 implementada salvo la comprobación de respawn. El usuario confirmó salto, auto-salto, sprint, agacharse y vuelo. Más adelante, el vuelo quedará limitado a modo creativo u objetos especiales.
 - El mundo de `main.tscn` carga terreno procedural alrededor de la cámara del jugador. Genera como máximo un chunk de datos y una malla por frame; descarga chunks a distancia y conserva los modificados en memoria. Incluye agua, árboles, cuevas y semilla de sesión.
-- Fase 6: raycast, contorno y rotura de bloques confirmados. El remallado vecino ya aplica todas las mallas afectadas atómicamente para evitar el parpadeo; falta confirmar el resultado visual.
+- Fase 6: M6.01–M6.04 confirmados. Colocar bloques y hotbar lógica (M6.05–M6.06) implementados; falta comprobarlos en juego.
 - Las hojas usan transparencia recortada con un patrón pseudoaleatorio mezclado para evitar artefactos diagonales repetitivos.
 - La escena principal arranca sin errores en la salida del Godot MCP. El jugador no activa la física hasta que las colisiones cercanas están listas.
 
@@ -41,7 +41,7 @@ Los documentos de fases describen el diseño previsto; `BW_02_PROGRESS.md` y el 
 
 ## Continuación recomendada
 
-1. Confirmar M6.03–M6.04 y continuar por M6.05 según `docs/BW_07_FASES_6-7_interaccion_e_interfaz.md`.
+1. Confirmar M6.05–M6.06 y continuar por M6.07 según `docs/BW_07_FASES_6-7_interaccion_e_interfaz.md`.
 2. Mantener `docs/BW_02_PROGRESS.md` actualizado.
 3. Usar Godot MCP para ejecutar el juego o el runner en este equipo si las teclas F no están disponibles.
 4. No cerrar el problema visual de la pantalla gris hasta comprobar las texturas en la ventana real.
