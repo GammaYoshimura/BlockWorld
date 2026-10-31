@@ -17,6 +17,8 @@ func _physics_process(delta: float) -> void:
 	var acceleration: float = 60.0 if is_on_floor() else 20.0
 	velocity.x = move_toward(velocity.x, target_velocity.x, acceleration * delta)
 	velocity.z = move_toward(velocity.z, target_velocity.z, acceleration * delta)
+	if Input.is_action_just_pressed(&"jump") and is_on_floor():
+		velocity.y = Const.JUMP_VELOCITY
 	if is_on_floor():
 		if velocity.y < 0.0:
 			velocity.y = 0.0
