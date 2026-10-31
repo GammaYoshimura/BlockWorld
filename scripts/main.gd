@@ -25,7 +25,9 @@ func _ready() -> void:
 	player.position = camera_position - Vector3.UP * Const.PLAYER_EYE_HEIGHT
 	add_child(player)
 	_camera = player.get_camera()
-	_camera.look_at_from_position(camera_position, world_center, Vector3.UP)
+	var look_direction: Vector3 = (world_center - camera_position).normalized()
+	player.rotation.y = atan2(look_direction.x, -look_direction.z)
+	player.head.rotation.x = asin(look_direction.y)
 
 	_build_streamed_world()
 

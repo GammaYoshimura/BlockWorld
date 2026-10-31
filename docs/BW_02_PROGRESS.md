@@ -51,8 +51,8 @@ Fecha última actualización: 2026-10-31
 
 ## Fase 5 — Jugador
 - [x] M5.01 — `Player` construye cápsula de colisión (`radius=0.3`, `height=1.8`), pivote `Head` a altura de ojos y `Camera3D`; la escena principal usa al jugador como objetivo del streaming y ya no crea la cámara libre. Godot ejecuta la escena sin errores; pendiente confirmación visual del usuario.
-- [ ] M5.02 — Mirada con ratón.
-- [ ] M5.03 — Movimiento horizontal.
+- [x] M5.02 — Mirada con ratón; ratón capturado al iniciar, giro horizontal en `Player`, vertical en `Head` limitado a ±89°; Esc libera y clic recaptura. Usuario confirmó que funciona.
+- [x] M5.03 — Movimiento horizontal con `Input.get_vector`, velocidad objetivo `WALK_SPEED` (4.3) normalizada también en diagonal, aceleración suelo/aire 60/20 y frenado al soltar. Sin gravedad todavía (M5.04); pendiente de comprobación del usuario.
 - [ ] M5.04 — Gravedad.
 - [ ] M5.05 — Colisión con el mundo.
 - [ ] M5.06 — Salto.

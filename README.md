@@ -16,10 +16,10 @@ La carpeta `.godot/` es caché local y está excluida de Git. Godot la recrea al
 
 ## Estado actual
 
-- Fases 1–4 completas hasta M4.11; Fase 5 iniciada con M5.01 implementado, pendiente de confirmación visual.
+- Fases 1–4 completas hasta M4.11; Fase 5 implementada hasta M5.03. El usuario confirmó que la mirada con ratón funciona; falta confirmar el movimiento horizontal.
 - El mundo de `main.tscn` carga terreno procedural alrededor de la cámara del jugador. Genera como máximo un chunk de datos y una malla por frame; descarga chunks a distancia y conserva los modificados en memoria. Incluye agua, árboles, cuevas y semilla de sesión.
-- Siguiente hito según el plan: **M5.02 — Mirada con ratón** en `docs/BW_06_FASE_5_jugador.md`.
-- El usuario informa que la ventana del juego se ve gris. Aunque los tests de asignación de atlas/UV pasaron antes, **la visualización con textura no está confirmada para el usuario**. No afirmar que el terreno aparece texturizado hasta resolverlo y comprobarlo de verdad.
+- Siguiente hito según el plan: **M5.04 — Gravedad** en `docs/BW_06_FASE_5_jugador.md`.
+- Las hojas usan transparencia recortada con un patrón pseudoaleatorio mezclado para evitar artefactos diagonales repetitivos.
 - El runner acumulado pasó sus comprobaciones hasta M4.01 después de los cambios de rendimiento. Aparecen tres `push_error` deliberados de M2.03 al comprobar accesos inválidos; no hubo fallos de test. La escena principal también arranca sin errores en la salida del Godot MCP.
 
 ## Rendimiento del mallado
