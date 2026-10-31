@@ -7,6 +7,9 @@ const CHUNK_NEIGHBOR_OFFSETS: Array[Vector2i] = [
 	Vector2i(0, -1),
 	Vector2i(0, 1)
 ]
+const ChunkGenerationTask = preload("res://scripts/world/chunk_generation_task.gd")
+const ThreadResultQueueScript = preload("res://scripts/util/thread_result_queue.gd")
+const MAX_GENERATION_TASKS: int = 4
 
 var chunks: Dictionary = {}
 var chunk_nodes: Dictionary = {}
@@ -22,6 +25,8 @@ var stream_target: Node3D
 var _stream_center_chunk: Vector2i = Vector2i(2147483647, 2147483647)
 var _data_queue: Array[Vector2i] = []
 var _mesh_queue: Array[Vector2i] = []
+var _generation_tasks: Dictionary = {}
+var _generation_results: RefCounted = ThreadResultQueueScript.new()
 
 func _init(seed_override: int = 0) -> void:
 	world_seed = seed_override if seed_override != 0 else GameSettings.resolve_world_seed()
@@ -39,12 +44,21 @@ func ensure_chunk(cx: int, cz: int) -> ChunkData:
 	var data: ChunkData = _take_modified_chunk(coord)
 	if data == null:
 		data = generator.generate(cx, cz)
+	_register_chunk_data(data)
+	return data
+
+func _register_chunk_data(data: ChunkData) -> void:
+	var coord: Vector2i = data.coord
+	if chunks.has(coord):
+		return
+	var modified_data: ChunkData = _take_modified_chunk(coord)
+	if modified_data != null:
+		data = modified_data
 	chunks[coord] = data
 
 	var chunk_node: Chunk = Chunk.new(coord)
 	chunk_nodes[coord] = chunk_node
 	add_child(chunk_node)
-	return data
 
 func remesh(coord: Vector2i) -> bool:
 	last_mesh_build_usec = 0
@@ -75,6 +89,7 @@ func _build_mesh_info(coord: Vector2i) -> Dictionary:
 	}
 
 func update_streaming(world_position: Vector3) -> void:
+	_process_generation_results()
 	var center_chunk: Vector2i = Coords.world_to_chunk(floori(world_position.x), floori(world_position.z))
 	if center_chunk != _stream_center_chunk:
 		_unload_distant_chunks(center_chunk)
@@ -89,7 +104,7 @@ func set_render_distance(distance: int) -> void:
 	_stream_center_chunk = Vector2i(2147483647, 2147483647)
 
 func get_pending_data_count() -> int:
-	return _data_queue.size()
+	return _data_queue.size() + _generation_tasks.size()
 
 func get_pending_mesh_count() -> int:
 	return _mesh_queue.size()
@@ -154,10 +169,31 @@ func _coord_before(a: Vector2i, b: Vector2i) -> bool:
 	return distance_a < distance_b
 
 func _process_one_data_chunk() -> void:
-	if _data_queue.is_empty():
+	if _data_queue.is_empty() or _generation_tasks.size() >= MAX_GENERATION_TASKS:
 		return
 	var coord: Vector2i = _data_queue.pop_front()
-	ensure_chunk(coord.x, coord.y)
+	if chunks.has(coord) or _is_generation_active(coord):
+		return
+	var task_id: int = WorkerThreadPool.add_task(
+		Callable(ChunkGenerationTask, "run").bind(world_seed, coord, _generation_results),
+		false,
+		"Generate chunk %d,%d" % [coord.x, coord.y]
+	)
+	_generation_tasks[task_id] = coord
+
+func _process_generation_results() -> void:
+	for task_id_variant: Variant in _generation_tasks.keys():
+		var task_id: int = int(task_id_variant)
+		if WorkerThreadPool.is_task_completed(task_id):
+			WorkerThreadPool.wait_for_task_completion(task_id)
+			_generation_tasks.erase(task_id)
+	var results: Array = _generation_results.call("pop_all")
+	for result_variant: Variant in results:
+		var result: Dictionary = result_variant as Dictionary
+		_register_chunk_data(result["data"] as ChunkData)
+
+func _is_generation_active(coord: Vector2i) -> bool:
+	return _generation_tasks.values().has(coord)
 
 func _process_one_mesh_chunk() -> void:
 	if _mesh_queue.is_empty():
