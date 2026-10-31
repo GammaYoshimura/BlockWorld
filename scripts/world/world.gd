@@ -40,6 +40,12 @@ func _process(_delta: float) -> void:
 	if stream_target != null and is_instance_valid(stream_target):
 		update_streaming(stream_target.global_position)
 
+func _exit_tree() -> void:
+	for task_id_variant: Variant in _generation_tasks.keys():
+		WorkerThreadPool.wait_for_task_completion(int(task_id_variant))
+	for task_id_variant: Variant in _mesh_tasks.keys():
+		WorkerThreadPool.wait_for_task_completion(int(task_id_variant))
+
 func ensure_chunk(cx: int, cz: int) -> ChunkData:
 	var coord: Vector2i = Vector2i(cx, cz)
 	if chunks.has(coord):
