@@ -81,6 +81,9 @@ Fecha última actualización: 2026-10-31
 - [x] M7.05 — Menú inicial con semilla opcional; vacío elige una semilla aleatoria persistente en sesión. «Nuevo mundo» entra en la escena principal; «Salir» cierra la aplicación. Falta confirmación de uso en juego.
 - [x] M7.06 — Slider en pausa para render distance entre límites configurados; actualiza `GameSettings`, reinicia las colas de streaming en vivo y ajusta el `far` de la cámara. Falta confirmación en juego.
 
+## Fase 8 — Rendimiento (hilos)
+- [ ] M8.01 — `ThreadResultQueue` implementada con `Mutex`, `push_result`, `pop_all` y `size`; pendiente verificar el criterio de 100 resultados desde `WorkerThreadPool`.
+
 ## Desviaciones del contrato (si las hay, aprobadas por el humano)
 - M1.04: el criterio menciona 25 acciones, pero la lista de la sección 3.7 enumera 24; se implementaron las 24 enumeradas, sin inventar una acción.
 
@@ -93,6 +96,7 @@ Fecha última actualización: 2026-10-31
 - `res://scripts/autoload/game_settings.gd` · semilla y distancia de renderizado persistentes durante la sesión · M7.06
 - `res://scripts/autoload/input_setup.gd` · registro de acciones de entrada y comprobación temporal · M1.04
 - `res://scripts/util/const.gd` · constantes del contrato · M1.03
+- `res://scripts/util/thread_result_queue.gd` · cola segura de resultados para tareas worker · M8.01
 - `res://scripts/util/blocks.gd` · ids, propiedades y consultas de bloques con tablas de acceso rápido por id · M3.12
 - `res://scripts/util/coords.gd` · conversiones entre bloques, chunks y coordenadas locales · M1.06
 - `res://scripts/util/atlas_builder.gd` · clase `AtlasBuilder` con atlas procedural y export PNG · M3.08
