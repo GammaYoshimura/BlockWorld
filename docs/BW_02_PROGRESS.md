@@ -73,6 +73,14 @@ Fecha última actualización: 2026-10-31
 - [ ] M6.08 — Mantener clic repite romper/colocar cada `ACTION_REPEAT_SECONDS` (0.25 s).
 - [x] M6.09 — Ediciones sobreviven a descarga: `World` conserva `ChunkData.modified` en `modified_chunks` y lo restaura al regenerar el chunk (implementado en M4.10).
 
+## Fase 7 — Interfaz
+- [x] M7.01 — Mira blanca con contorno negro, centrada en un `Control` a pantalla completa y redibujada según el tamaño del viewport. Falta confirmación visual del usuario.
+- [ ] M7.02 — Hotbar visual de 9 slots prevista.
+- [ ] M7.03 — Overlay F3 completo previsto.
+- [ ] M7.04 — Menú de pausa previsto.
+- [ ] M7.05 — Menú principal y semilla prevista.
+- [ ] M7.06 — Slider de distancia de renderizado previsto.
+
 ## Desviaciones del contrato (si las hay, aprobadas por el humano)
 - M1.04: el criterio menciona 25 acciones, pero la lista de la sección 3.7 enumera 24; se implementaron las 24 enumeradas, sin inventar una acción.
 
@@ -99,6 +107,7 @@ Fecha última actualización: 2026-10-31
 - `res://scripts/player/player.gd` · jugador con movimiento, salto, vuelo, respawn y cámara · M5.10
 - `res://scripts/player/block_highlight.gd` · malla de contorno y raycast de selección · M6.02
 - `res://scripts/player/block_interaction.gd` · rompe bloque apuntado con clic izquierdo · M6.03
+- `res://scripts/ui/crosshair.gd` · mira centrada con contorno · M7.01
 - `res://scripts/world/voxel_raycast.gd` · raycast voxel DDA · M6.01
 - `res://scripts/player/block_interaction.gd` · clase `BlockInteraction` · M1.02
 - `res://scripts/player/block_highlight.gd` · clase `BlockHighlight` · M1.02

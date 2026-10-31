@@ -48,6 +48,9 @@ func _ready() -> void:
 	add_child(_block_interaction)
 
 	var debug_layer: CanvasLayer = CanvasLayer.new()
+	var crosshair: Crosshair = Crosshair.new()
+	crosshair.name = "Crosshair"
+	debug_layer.add_child(crosshair)
 	_debug_label = Label.new()
 	_debug_label.position = Vector2(10.0, 10.0)
 	_debug_label.add_theme_color_override("font_color", Color.WHITE)
